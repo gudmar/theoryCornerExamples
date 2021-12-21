@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="output"></div>
+
+    <script>
+        let testCases = [
+            {
+                in: [1,3,2,6,5,4,9,7,8,],
+                out: [1,2,3,4,5,6,7,8,9]
+            },
+            {
+                in: [1,2,3,4,5,6,7,8,9],
+                out: [1,2,3,4,5,6,7,8,9]
+            },
+            {
+                in: [9,8,7,6,5,4,3,2,1],
+                out: [1,2,3,4,5,6,7,8,9]
+            },
+            {
+                in: [1,4,3,2,1,2,4,3,7,5,6,7,6,5,9,8,8,9],
+                out: [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9]
+            },
+            {
+                in: [],
+                out: []
+            },
+            {
+                in: [5],
+                out: [5]
+            },
+            {
+                in: [4,3],
+                out: [3,4]
+            },
+            {
+                in: [5,4,6,3,7,2,8,1,9,0],
+                out: [0,1,2,3,4,5,6,7,8,9]
+            },
+
+
+        ]
+            function arraysShouldBeEqual(arr1,arr2){
+                let l1 = arr1.length, l2 = arr2.length;
+                if (l1 != l2) return false;
+                let indexOfUnequal = arr1.findIndex((item, index, arr)=>{
+                    return !(item === arr2[index])
+                })
+                return indexOfUnequal == -1
+            }
+            function insertTable(){
+                let destination = document.getElementById("output");
+                let template = `
+                    <table>
+                        <thead><tr><th>Test name</th><th>result</th></tr></thead>
+                        <tbody id='outputTable'>
+
+                        </tbody>
+                    </table>
+                `
+                destination.innerHTML = template;
+            }
+            insertTable();
+            function reportTc(testName, testResult){
+                let tr = document.createElement('tr');
+                let innerH = `
+                    <td>${testName}</td><td>${testResult}</td>
+                `
+                tr.innerHTML = innerH;
+                let destination = document.getElementById('outputTable');
+                destination.appendChild(tr);
+            }
+            function runTests(testedFunction, equationFunction){
+                for (let tc of testCases){
+                    let result = testedFunction(tc.in);
+                    reportTc(tc.in, equationFunction(tc.out, result));
+                }
+            }
+
+            function comparationFunction(a, b){
+                if (a < b) return -1;
+                if (a == b) return 0;
+                return 1;
+            }
+
+            function bubbleSort(arr, comparationFunction){
+                let isDone = false;
+                if (arr.length < 2) return arr;
+                while (!isDone){
+                    isDone = true;
+                    for(let i=0; i < arr.length - 1; i++){
+                        let a = arr[i];
+                        let b = arr[i+1];
+                        if (comparationFunction(a, b) == 1){
+                            isDone = false;
+                            let temp = a;
+                            arr[i] = b;
+                            arr[i+1] = temp;
+                        }
+                    }
+                }
+                return arr;
+            }
+
+            function quickSort(arr, comparationFunction){
+                if (arr.length < 2) return arr;
+                let pivotElement = arr[0];
+                let lessEqArr = [];
+                let greaterArr = [];
+                for(let i=1; i < arr.length; i++){
+                    let a = arr[i];
+                    let comparationResult = comparationFunction(arr[i], pivotElement);
+                    if (comparationResult == 1) greaterArr.push(arr[i])
+                    else lessEqArr.push(arr[i]);
+                }
+                lessEqArr = quickSort(lessEqArr, comparationFunction);
+                greaterArr = quickSort(greaterArr, comparationFunction);
+
+                arr = lessEqArr.concat(pivotElement, greaterArr);
+                // console.log(arr.toString())
+                return arr;
+            }
+
+            function wrappedBubbleSort(arr){
+                return bubbleSort(arr, comparationFunction);
+            }
+
+            function wrappQuickSort(arr){
+                return quickSort(arr, comparationFunction);
+            }
+
+            runTests(wrappedBubbleSort, arraysShouldBeEqual);
+            runTests(wrappQuickSort, arraysShouldBeEqual);
+        
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Proxy demonstration</h1>
+        <ul>
+            <li>Submitting the form will add a property to some object handled by a proxy</li>
+            <li>Thanks to the proxy, when property is added to the object, an element is added to the DOM</li>
+            <li>If property in the object exists and is only updated, element in the DOM is only updated correspondingly</li>
+            <li>Deleting some element makes its substitute disappear from the DOM</li>
+            <li><i>Get value</i> button searches the object, and if property exists, its value is filled in the value window</li>
+        </ul>
+    <form>
+        <label for="props">Property:</label>
+        <input type="text" id="props"/>
+        <label for="value">Value:</label>
+        <input type="text" id ="value"/>
+        <input type ="submit" id ="submit" name="submit"/>
+        <input type ="button" id ="get" value="Get value"/>
+        <input type ="button" id ="delete" value="Delete"/>
+        <input type ="button" id ="console" value="Print to console"/>
+    </form>
+    <div id = "someId">
+
+    </div>
+
+
+
+
+    <script>
+
+
+function Binder(outletId){
+    let form = document.forms[0];
+    form.onsubmit = submit;
+    this.outletId = outletId;
+    this.getIdFromKey = function(key){
+        return 'id'+key
+    };
+    this.contentStorage = {};
+};
+let handler = {
+    set: function(target, key, value){
+        if (key !== 'storage'){
+            let isAlreadyAdded = Reflect.has(target.contentStorage, key);
+            let newValue = 'prop: '+key+ ' ' + 'val: '+ value;
+            if (isAlreadyAdded){
+                let elementInDom = document.getElementById(target.getIdFromKey(key));
+                elementInDom.innerText = newValue;
+            } else {
+                let newElement = document.createElement('div');
+                let outlet = document.getElementById(target.outletId);
+                newElement.setAttribute('id', target.getIdFromKey(key))
+                newElement.innerText = newValue;       
+                outlet.appendChild(newElement)
+            }
+            target.contentStorage[key] = value;
+        }
+    },
+    get: function(target, key){
+        if (key == 'storage') return target.contentStorage;
+        let elementExists = Reflect.has(target.contentStorage, key);
+        let value = null;
+        if (elementExists) value = target.contentStorage[key];
+        window.alert(
+            elementExists?'Item value is: '+ value:'Item does not exist'
+        )
+        return value;
+    },
+    deleteProperty: function(target, key){
+        console.log(target);
+        console.log(key)
+        let elementExists = Reflect.has(target.contentStorage, key);
+        if (elementExists){
+            let domElement = document.getElementById(target.getIdFromKey(key));
+            let infoText = 'Element '+domElement.innerText+' will was removed';
+            domElement.remove();
+            Reflect.deleteProperty(target.contentStorage, key);
+            console.log(target.contentStorage)
+            window.alert(infoText);
+        } else {
+            window.alert('Element '+key+' not found')
+        }
+    },
+}
+
+    let targetObject = new Binder('someId');
+    let proxy = new Proxy(targetObject, handler);
+
+    function submit(event){
+        event.preventDefault();
+        let propsInput = document.getElementById('props');
+        let valInput = document.getElementById('value');
+        if (propsInput.value.trim() != ''){
+            proxy[propsInput.value] = valInput.value;
+            propsInput.value = '';
+            valInput.value = '';
+        }
+    }
+
+    function getValue(event){
+        let propsInput = document.getElementById('props');
+        let valInput = document.getElementById('value');
+        if (propsInput.value.trim() != ''){
+            let retrievedValue = proxy[propsInput.value];
+            valInput.value = retrievedValue;
+        }
+    }
+
+    function deleteValue(event){
+        let propsInput = document.getElementById('props');
+        let valInput = document.getElementById('value');
+        if (propsInput.value.trim() != ''){
+            delete proxy[propsInput.value]
+            valInput.value = '';
+            propsInput.value = '';
+        }
+    }
+
+    function printToConsole(evnet){
+        let content = proxy['storage'];
+        console.log(content);
+    }
+
+    document.getElementById('get').addEventListener('click', getValue);
+    document.getElementById('delete').addEventListener('click', deleteValue);
+    document.getElementById('console').addEventListener('click', printToConsole);
+
+    </script>
+</body>
+</html>

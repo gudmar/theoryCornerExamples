@@ -31,7 +31,6 @@
             outline: solid 40px green;
             display: inline-block;
             font-family: Arial, Helvetica, sans-serif;
-            outline-radius: 40px;
             border-radius: 20px;
         }
         .center{
@@ -66,6 +65,17 @@
             top: -150px;
         }
         
+        .fancy-border{
+            position: relative;
+            width:200px;
+            height: 200px;
+            border-radius: 30% 70% 48% 52% / 30% 59% 41% 70% ;
+            background-color: purple;
+            margin: 100px;
+            color:white;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.5rem;
+        }
     </style>
 
     <div class="boxModel">
@@ -74,6 +84,9 @@
         <div class="absolute border">Border</div>
         <div class="absolute outline">Outline</div>
         <div class="absolute margin">Margin</div>
+    </div>
+    <div class="fancy-border center">
+        Fancy border
     </div>
 </body>
 </html>
