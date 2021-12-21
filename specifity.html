@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        .display-as-row{
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+        .center{
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+        }
+        .wrapper{
+            border: solid thin rgb(200,200,200);
+            border-radius: 10px;
+            position: relative;
+            /* width: 300px; */
+            height: 280px;
+            padding: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 100px;
+            background-color: rgb(240,240,235);
+        }
+        .display-as-column{
+            display: flex;
+            flex-direction: column;
+        }
+        .display-space-between{
+            display: flex;
+            justify-content: space-between;
+        }
+        .specifity-item{
+            position: relative;
+            display: flex;
+            margin: 10px;
+            height: 90%;
+            width: 70px;
+            align-content: space-around;
+            justify-content: space-between;
+        }
+        .box:after{
+            position: absolute;
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: solid rgb(150,140,150) thin;
+            background-color: white;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateZ(45deg);
+            border-bottom-color: transparent;
+            border-right-color: transparent;
+        }
+        .title{
+            text-align: center;
+            position: relative;
+            height: 30px;
+        }
+        .box{
+            border: solid thin rgb(150,140,150);
+            border-radius: 10px;
+            height: 100px;
+            width: 70px;
+            background-color: white;
+        }
+        .high{
+            height: 70%;
+        }
+        .coma{
+            height: 90%;
+            font-size: 10rem;
+            display: flex;
+            align-content: flex-end;
+        }
+    </style>
+    <div class="wrapper display-as-column center">
+        <div class = "display-as-row display-space-between high">
+            <div class = "specifity-item display-as-column">
+                <div class="title center">Style attirbute</div>
+                <div class="box"></div>
+            </div>
+            <div class="coma">,</div>
+            <div class = "specifity-item display-as-column">
+                <div class="title center">Id</div>
+                <div class="box"></div>
+            </div>
+            <div class="coma">,</div>
+            <div class = "specifity-item display-as-column">
+                <div class="title center">class, pseudo-class, attribute</div>
+                <div class="box"></div>
+            </div>
+            <div class="coma">,</div>
+            <div class = "specifity-item display-as-column">
+                <div class="title center">tag, general selectors</div>
+                <div class="box"></div>
+            </div>
+        </div>
+        <div class = "display-as-row display-space-between">
+            <div>High specifity</div>
+            <div>Low specifity</div>
+        </div>
+    </div>
+    
+</body>
+</html>

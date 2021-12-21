@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        .center{
+            display:flex;
+            align-content: center;
+            align-items: center;
+            justify-content: center;
+        }
+        .child{
+            background-color: black;
+            border-radius: 5px;
+            position: relative;
+            width: 150px;
+            height: 100px;
+            margin: 1rem;
+            color: white;
+        }
+    </style>
+    <div id="grand-parent">
+        <div id ="parent"><div class="child center" id ="child-1">1</div><div class="child center" id ="child-2">2</div><div class="child center" id ="child-3">3</div></div>
+        <div id ="Bparent">
+            <div class="child center" id ="Bchild-1">1</div>
+            <div class="child center" id ="Bchild-2">2</div>
+            <div class="child center" id ="Bchild-3">3</div>
+        </div>
+    </div>
+    <script>
+        var parent = document.getElementById('parent');
+        var grandParent = parent.parentNode;
+        var child1 = parent.firstChild;
+        var child2 = child1.nextSibling;
+        var child3 = parent.lastChild;
+
+        var bParent = document.getElementById('Bparent');
+        
+
+        console.log(parent)
+        console.log(parent.childNodes)
+        console.log(child1);
+        console.log(child2);
+        console.log(child3);
+
+        console.log(Bparent)
+        console.log(Bparent.childNodes)
+    </script>
+</body>
+</html>
