@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+
+<script>
+function Vehicle(nrOfWheels, poweredBy){
+    this.nrOfWheels = nrOfWheels;
+    this.poweredBy = poweredBy;
+}
+Vehicle.prototype.examples = ['bicycle', 'motorcycle', 'car', 'train']
+Vehicle.prototype.giveExamples = function(){
+    console.log(this.examples)
+}
+
+// a static method:
+Vehicle.whatSortOf = function(nrOfWheels){
+    if (nrOfWheels === 4) return 'Probably a car';
+    if (nrOfWheels === 2) return 'Probably a motorcycle or a bicycle';
+    if (nrOfWheels >= 8 && nrOfWheels % 2 === 0) return 'Could be a train';
+    return `I don't know`
+}
+
+function CombustionEngineVehicle(nrOfWheels){
+    Vehicle.call(this, nrOfWheels, 'combustion engine');
+    // this.examples = ['car', 'motorcycle']
+}
+CombustionEngineVehicle.prototype = Object.create(Vehicle.prototype);
+CombustionEngineVehicle.prototype.constructor = CombustionEngineVehicle;
+CombustionEngineVehicle.prototype.examples =  ['car', 'motorcycle'];
+
+function Car(make, model, year){
+    CombustionEngineVehicle.call(this, 4);
+    this.make = make;
+    this.model = model;
+    this.year = year;
+    // this.examples = ['subaru impreza', 'maserati biturbo', 'ford mustang']
+}
+Car.prototype = Object.create(CombustionEngineVehicle.prototype);
+Car.prototype.constructor = Car;
+Car.prototype.examples = ['subaru impreza', 'maserati biturbo', 'ford mustang'];
+Car.prototype.introduction = function(){
+    console.log(`I am ${this.make} ${this.model} from ${this.year}`);
+}
+
+let subaruLegacy = new Car('subaru', 'legacy', '2005');
+// subaruLegacy.examples = ['2.0 H4 SOHC', '2.0 H4 DOHC', '2.5 H4 DOHC Turbo', '3.0 H6']
+let peugeot206 = new Car('peugeot', '206', '2004');
+peugeot206.examples = ['2.0 HDI', '2.0GTI', '1.1 SOHC'];
+peugeot206.introduction(); // I am peugeot 206 from 2004
+// from Car prototype
+
+Object.getOwnPropertyNames(subaruLegacy); // ["make", "model", "year"]
+Object.getOwnPropertyNames(peugeot206); // ["make", "model", "year", "examples"]
+// as here concrete examples were specified
+peugeot206.examples; // ["2.0 HDI", "2.0GTI", "1.1 SOHC"]
+subaruLegacy.examples; // ["subaru impreza", "maserati biturbo", "ford mustang"]
+// taken from the prototype, as no specific for this object were added
+
+peugeot206.giveExamples(); // ["2.0 HDI", "2.0GTI", "1.1 SOHC"]
+// This method is taken from Vehicle prototype, as 
+// it is not available neither in peugeot206, nor in the Car prototype,
+// nor in the CombustionEngine prototype.
+// Data is taken from the peugeot206 instance, as it was specified there.
+
+peugeot206.__proto__.__proto__.__proto__.__proto__ === Object.prototype; // true;
+peugeot206.__proto__.__proto__.__proto__.__proto__.__proto__ === null; // true;
+
+
+</script>
+
+</body>
+</html>
