@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<script>
+
+
+let primaryIterator = function(){
+    let lastReturnedPrimaryNumber = 0;
+    let limit = 100;
+    let getFirstDivisor = function(nr){
+        if (nr < 0) throw new Error('Cannot calculate negative numbers');
+        if (Math.floor(nr) - nr !== 0) throw new Error('Cannot calculate fractions');
+        for (let i = 2; i <= nr; i+=1){
+            if (nr % i === 0) return i;
+        }
+        return nr;
+    }
+    let isPrimary = function(nr){
+        let firstDivisor = getFirstDivisor(nr);
+        return firstDivisor === nr;
+    }
+    let getNextPrimary = function(startFrom){
+        let current = startFrom;
+        let isPrimeryFound = false;
+        while (!isPrimeryFound) {
+            current += 1;
+            isPrimeryFound = isPrimary(current);
+            if (isPrimeryFound) return current;
+        }
+    }
+    let currentIndex = -1;
+    return {
+        next: function(startFrom){
+            if (startFrom) {
+                currentIndex = 0; lastReturnedPrimaryNumber = startFrom;
+            }
+            currentIndex += 1;
+            lastReturnedPrimaryNumber = getNextPrimary(lastReturnedPrimaryNumber);
+            return currentIndex < limit ? {
+                done: false,
+                value: lastReturnedPrimaryNumber
+            } : {
+                done: true
+            }
+        }
+    }
+}
+
+// **** usage of primary interator
+
+let primaryI =  primaryIterator();
+console.dir(primaryI);
+for (let i = 0; i < 20; i++){
+    console.log(primaryI.next().value); //prints values from 1 to 67
+}
+console.log(primaryI.next(1000));
+for (let i = 0; i < 20; i++){
+    console.log(primaryI.next().value); // from 1013 to 1129
+    //thanks to startFrom parameter
+}
+
+
+// **** iterable out of primary iterator
+
+let primaryIterable = {
+    [Symbol.iterator] : primaryIterator
+}
+
+console.log([...primaryIterable]);
+console.log([...primaryIterable]); // works fine as object is iterable, not only an iterator
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ? With previous example this does not work
+console.log(primaryIterable[Symbol.iterator]().next(300));
+// This prints the next primary number after 300;
+
+
+
+
+//******* iterable
+
+
+let iterable = {
+    current: 0,
+    next: function(startFrom){
+        if(startFrom) this.current = startFrom;
+        this.current += 1;
+        let isDone = this.current>5?true:false
+        if(isDone) {
+            return {done: isDone}
+        }
+        return {
+            value: this.current,
+            done: isDone
+        }
+    },
+    [Symbol.iterator]: function(){
+        return this
+    }
+}
+let it = iterable;
+console.dir(it);
+for(let i of it){
+    console.log(i)
+} // will list 1 to 5
+console.log(it.next(2)); // {value: 3, done: false}
+console.log(it.next(20)); // {done:true}
+console.log([...it]);
+
+//****** iterable class
+
+class IterableClass{
+    constructor(){
+        this.current = 0;
+        this.limit = 10;
+    }
+
+    [Symbol.iterator]() {
+        return {
+            next: () => {
+            // an arrow used, so this is binded
+                this.current += 1;
+                return {
+                    done: this.current > this.limit ? true : false,
+                    value: this.current
+                }
+            }
+        }
+    }
+}
+
+let iterInstance = new IterableClass();
+console.log([...iterInstance]);
+
+class ExtendsIterableClass extends IterableClass{
+    constructor(){
+        super();
+    }
+}
+
+let extendedIterInstance = new ExtendsIterableClass();
+console.log([...extendedIterInstance]);
+// [Symbol.iterator] property is inherited
+
+
+
+// ******** Generators
+
+function* generator(){
+    yield 1; yield 2; yield 3; yield 4;
+}
+
+console.dir(generator)
+
+let gen = generator();
+console.dir(gen);
+console.log([...gen]); // [1,2,3]
+console.log([...gen]); // [] as generator was finished in the previous line
+console.log(gen.next().value); // undefined, as generator is finished
+
+let gen2 = generator();
+console.log(gen2.next().value);
+console.log(gen2.return(20)); // will return {value: 20, done: true};
+console.log(gen2.next().value); // undefined, as return finishes a generator
+
+let gen3 = generator();
+console.log(gen3.next().value);
+console.log(gen3.return(2)); // will return {value: 2, done: true};
+console.log(gen3.next().value); // undefined, as return finishes a generator
+
+// let gen4 = generator();
+// console.log(gen4.next()); // 1
+// console.log(gen4.next('100').value); // 100
+// console.log(gen4.next('200').value); // 200
+// console.log(gen4.next().value); // 4
+// // next with argument returns the given argument instead of the yielded one
+// // and does not close the generator;
+
+
+//********* A primary number example with generators
+
+function* primaryGenerator(){
+    let lastReturnedPrimaryNumber = 0;
+    let indexLimit = 100;
+    let getFirstDivisor = function(nr){
+        for (let i = 2; i <= nr; i+=1){
+            if (nr % i === 0) return i;
+        }
+        return nr;
+    }
+    let isPrimary = function(nr){
+        let firstDivisor = getFirstDivisor(nr);
+        return firstDivisor === nr;
+    }
+    let getNextPrimary = function(startFrom){
+        let current = startFrom;
+        let isPrimeryFound = false;
+        while (!isPrimeryFound) {
+            current += 1;
+            isPrimeryFound = isPrimary(current);
+            if (isPrimeryFound) return current;
+        }
+    }
+    for (let index = 0; index < indexLimit; index++){
+        lastReturnedPrimaryNumber = getNextPrimary(lastReturnedPrimaryNumber);
+        yield lastReturnedPrimaryNumber;
+    }
+}
+
+let primaryGen = primaryGenerator();
+console.log([...primaryGen]);
+
+// ***** Primary generator as a class
+class PrimaryGeneratorClass {
+    constructor(){
+        this.lastReturnedPrimaryNumber = 0;
+        this.indexLimit = 100;
+    }
+    getFirstDivisor(nr){
+        for (let i = 2; i <= nr; i+=1){
+            if (nr % i === 0) return i;
+        }
+        return nr;
+    }
+    isPrimary(nr){
+        let firstDivisor = this.getFirstDivisor(nr);
+        return firstDivisor === nr;
+    }
+    getNextPrimary(startFrom){
+        let current = startFrom;
+        let isPrimeryFound = false;
+        while (!isPrimeryFound) {
+            current += 1;
+            isPrimeryFound = this.isPrimary(current);
+            if (isPrimeryFound) return current;
+        }
+    }
+    *[Symbol.iterator](startFrom){
+            let lastPrim = startFrom ?? this.lastReturnedPrimaryNumber;
+            this.lastReturnedPrimaryNumber = lastPrim;
+            for (let index = 0; index < this.indexLimit; index++){
+                this.lastReturnedPrimaryNumber = this.getNextPrimary(this.lastReturnedPrimaryNumber);
+                yield this.lastReturnedPrimaryNumber;
+            }
+            this.lastReturnedPrimaryNumber = 0;
+    }
+
+    nextTo(num){
+        return this[Symbol.iterator](num).next().value;
+    }
+    nextVal(){
+        return this[Symbol.iterator]().value;
+    }
+}
+
+let primGenClass = new PrimaryGeneratorClass();
+console.log([...primGenClass]); // primary numbers from 1 to 523
+console.log([...primGenClass]); // primary numbers from 1 to 523
+console.log(primGenClass.nextTo(300)); // 307
+console.log([...primGenClass]); // primary numbers from 311 to 967
+// because lastReturnedNumber was set to 307 with primGenClass.nextTo(300)
+
+
+
+</script>
+</body>
+</html>
