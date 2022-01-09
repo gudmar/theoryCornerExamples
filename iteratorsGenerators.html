@@ -37,7 +37,9 @@ let primaryIterator = function(){
     let currentIndex = -1;
     return {
         next: function(startFrom){
+            
             if (startFrom) {
+                console.log(startFrom)
                 currentIndex = 0; lastReturnedPrimaryNumber = startFrom;
             }
             currentIndex += 1;
@@ -112,6 +114,59 @@ for(let i of it){
 console.log(it.next(2)); // {value: 3, done: false}
 console.log(it.next(20)); // {done:true}
 console.log([...it]);
+console.log([...it]); // this produces an empty array, so lets see
+// how this would work with a function instead of a plain object
+
+let IterableFunction = function() {
+    this.current = 0;
+    this.next = function(startFrom){
+        if(startFrom) this.current = startFrom;
+        this.current += 1;
+        let isDone = this.current>5?true:false
+        if(isDone) {
+            return {done: isDone}
+        }
+        return {
+            value: this.current,
+            done: isDone
+        }
+    },
+    this[Symbol.iterator] = function(){
+        return this
+    }
+}
+let iterFunctInst = new IterableFunction();
+console.log([...iterFunctInst]);
+console.log([...iterFunctInst]); // still does not work
+// so lets wrap the next function
+let iterableWrapped = {
+    current: 0,
+    iterator: function() {
+        let current = 0;
+        return {
+            next: function(startFrom){
+            if(startFrom) current = startFrom;
+            current += 1;
+            let isDone = current>5?true:false
+            if(isDone) {
+                return {done: isDone}
+            }
+            return {
+                value: current,
+                done: isDone
+            }
+        }
+    }
+    },
+    [Symbol.iterator]: function(){
+        console.log(this.iterator())
+        return this.iterator()
+    }
+}
+let itWrap = iterableWrapped;
+console.log([...itWrap]);
+console.log([...itWrap]);
+
 
 //****** iterable class
 

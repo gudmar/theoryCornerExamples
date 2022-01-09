@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Async</title>
+</head>
+<body>
+    <style>body{background-color: #444;color:#ddd;font-family: Arial, Helvetica, sans-serif;}</style>
+    <div id="outlet">
+
+    </div>
+
+    <script>
+let lastRowId = 0;
+function getLastRowFromSection(sectionTitle){
+    if (sectionTitle) {
+        let section = document.querySelector(`[data-title = "${sectionTitle.replace(/ /g,'')}"]`);
+        let allRows = section.querySelectorAll('.row');
+        if (allRows.length === 0) throw new Error('No rows in section ' + sectionTitle);
+        return allRows[allRows.length - 1];
+    }
+    return document.getElementById(lastRowId + '');
+}
+function log(content, color, sectionTitle){
+    // let outlet = document.querySelector(`[data-attr = ${sectionTitle}]`) ?? document.getElementById(lastRowId + '');
+    let outlet = getLastRowFromSection(sectionTitle);
+    console.log(sectionTitle)
+    let span = document.createElement('span');
+    span.innerText = content;
+    if (color) span.style.color = color;
+    outlet.appendChild(span);
+}
+function newLogSection(sectionTitle){
+    let outlet = document.getElementById('outlet');
+    let newSection = document.createElement('div');
+    newSection.classList.add('section');
+    newSection.setAttribute('data-title', sectionTitle.replace(/ /g,''));
+    newSection.innerHTML = `<h3>${sectionTitle}</h3>`;
+    outlet.appendChild(newSection);
+}
+
+function newLogRow(sectionTitle){
+    lastRowId += 1;
+    sectionTitle = sectionTitle == undefined ? undefined : sectionTitle.replace(/ /g,'')
+    let outlet = document.querySelector(`[data-title = "${sectionTitle}"]`) ?? document.getElementById('outlet');
+    console.log(outlet)
+    let newRow = document.createElement('div');
+    newRow.classList.add('row');
+    newRow.setAttribute('id', lastRowId + '');
+    outlet.appendChild(newRow);
+}
+function endSection(){
+    let outlet = document.getElementById('outlet');
+    let hr = document.createElement('div');
+    hr.classList.add('sectionSeparator')
+    hr.innerHTML = '<hr>'
+    outlet.appendChild(hr);
+    newLogRow();
+}
+
+newLogRow();
+
+
+//*************************** 
+let SECTION_1 = 'Async function returns a promise';
+
+let resolveFunctionFactory = function(timeout, logSectionTitle){
+    return function(msgStart, msgEnd, msgResolve){
+        let signature = `  [[resolve${timeout}]]: `
+        if(msgStart || msgEnd) newLogRow(logSectionTitle);
+        if(msgStart) log(signature + msgStart, 'white', logSectionTitle);
+        return new Promise(resolve => {
+            setTimeout(function() {
+                resolve(signature + msgResolve);
+                log(signature + msgEnd, 'white', logSectionTitle)
+            }, timeout)
+        })
+    }
+}
+newLogSection(SECTION_1);
+let resolve100 = resolveFunctionFactory(100, SECTION_1);
+let resolve150 = resolveFunctionFactory(150, SECTION_1);
+
+async function asyncBug1(){
+    let a = await resolve100(' [start async1] ', ' [end async1] ', ' resolved bug1');
+    log(a, 'green', SECTION_1)
+    return ' some str '; // WILL return a promise anyway
+}
+console.log(lastRowId)
+log(asyncBug1(), 'yellow', SECTION_1);
+// This works
+// [[resolve100]]: [start async1] [object Promise] [[resolve100]]: [end async1] [[resolve100]]: resolved bug1
+// but [object Promise] is returned, as an async function always returns a PROMISE
+// To know the actual value returne by asyncBug1, a wrapper could help
+
+async function asyncBug1Wrapper(){
+    let result = await asyncBug1();
+    newLogRow(SECTION_1);
+    console.log(result)
+    log(result, SECTION_1);
+}
+asyncBug1Wrapper();
+
+// However the result is still packed in a function, and may not be taken out from async
+
+// **************************************
+endSection();
+
+
+
+
+
+
+
+
+
+
+    </script>
+    
+</body>
+</html>
