@@ -13,6 +13,8 @@
     </div>
 
     <script>
+
+        //****** LOGGER
 let lastRowId = 0;
 function getLastRowFromSection(sectionTitle){
     if (sectionTitle) {
@@ -26,7 +28,6 @@ function getLastRowFromSection(sectionTitle){
 function log(content, color, sectionTitle){
     // let outlet = document.querySelector(`[data-attr = ${sectionTitle}]`) ?? document.getElementById(lastRowId + '');
     let outlet = getLastRowFromSection(sectionTitle);
-    console.log(sectionTitle)
     let span = document.createElement('span');
     span.innerText = content;
     if (color) span.style.color = color;
@@ -45,7 +46,6 @@ function newLogRow(sectionTitle){
     lastRowId += 1;
     sectionTitle = sectionTitle == undefined ? undefined : sectionTitle.replace(/ /g,'')
     let outlet = document.querySelector(`[data-title = "${sectionTitle}"]`) ?? document.getElementById('outlet');
-    console.log(outlet)
     let newRow = document.createElement('div');
     newRow.classList.add('row');
     newRow.setAttribute('id', lastRowId + '');
@@ -63,7 +63,35 @@ function endSection(){
 newLogRow();
 
 
+
+// ************* TIMER **************
+
+class Timer{
+    constructor(){
+        this.currentTime = 0;
+        this.timer = null;
+    }
+    startTimer(){
+        this.timer = setInterval(()=>{
+            this.currentTime += 10;
+        },10)
+    }
+    stopTimer(){
+        clearInterval(this.timer);
+    }
+    resetTimer(){
+        this.currentTime = 0;
+    }
+    getCurrentTime(){
+        return this.currentTime;
+    }
+}
+
+
+
 //*************************** 
+// EXAMPLES
+//*****************
 let SECTION_1 = 'Async function returns a promise';
 
 let resolveFunctionFactory = function(timeout, logSectionTitle){
@@ -88,7 +116,6 @@ async function asyncBug1(){
     log(a, 'green', SECTION_1)
     return ' some str '; // WILL return a promise anyway
 }
-console.log(lastRowId)
 log(asyncBug1(), 'yellow', SECTION_1);
 // This works
 // [[resolve100]]: [start async1] [object Promise] [[resolve100]]: [end async1] [[resolve100]]: resolved bug1
@@ -98,7 +125,6 @@ log(asyncBug1(), 'yellow', SECTION_1);
 async function asyncBug1Wrapper(){
     let result = await asyncBug1();
     newLogRow(SECTION_1);
-    console.log(result)
     log(result, SECTION_1);
 }
 asyncBug1Wrapper();
@@ -107,6 +133,176 @@ asyncBug1Wrapper();
 
 // **************************************
 endSection();
+
+let SECTION_2 = "Attempt to return a value with an async function not having an await statement"
+newLogSection(SECTION_2);
+newLogRow(SECTION_2);
+async function asyncReturnValue(){
+    return 1;
+}
+log(asyncReturnValue(),'white',SECTION_2); // [object Promise]
+log(`  A async function always returns a promise, even if a return statement with a concrete value is used`,'#aaa',SECTION_2);
+
+endSection();
+
+
+// ************** ASYNC execution order ******************
+let SECTION_3_1 = "Async execution order - sequential start"
+newLogSection(SECTION_3_1);
+newLogRow(SECTION_3_1);
+
+let timer = new Timer();
+
+let resolve100_3_1 = resolveFunctionFactory(100, SECTION_3_1);
+let resolve150_3_1 = resolveFunctionFactory(150, SECTION_3_1);
+
+async function sequentialStartRace(){
+    timer.startTimer();
+    let f1 = await resolve100_3_1(' [started] ', ' [ended] ', ' [resolved] ')
+    newLogRow(SECTION_3_1);
+    log(timer.getCurrentTime(), 'green', SECTION_3_1);
+    newLogRow(SECTION_3_1);
+    let f2 = await resolve150_3_1(' [started] ', ' [ended] ', ' [resolved] ')
+    newLogRow(SECTION_3_1);
+    log(timer.getCurrentTime(), 'green', SECTION_3_1);
+    newLogRow(SECTION_3_1);
+    timer.stopTimer();
+}
+sequentialStartRace();
+
+
+let timer2 = new Timer();
+
+let SECTION_3_2 = "Async execution order - concurrent start"
+newLogSection(SECTION_3_2);
+newLogRow(SECTION_3_2);
+
+
+let resolve100_3_2 = resolveFunctionFactory(100, SECTION_3_2);
+let resolve150_3_2 = resolveFunctionFactory(150, SECTION_3_2);
+
+async function concurrentStartRace(){
+    // timer2.startTimer();
+    let f1 = resolve100_3_2(' [started] ', ' [ended] ', ' [resolved] ')
+    newLogRow(SECTION_3_2);
+    log(timer2.getCurrentTime(), 'green', SECTION_3_2);
+    newLogRow(SECTION_3_2);
+    let f2 = resolve150_3_2(' [started] ', ' [ended] ', ' [resolved] ')
+    newLogRow(SECTION_3_2);
+    log(timer2.getCurrentTime(), 'green', SECTION_3_2);
+    newLogRow(SECTION_3_2);
+    // timer2.stopTimer();
+    // return (f2)
+}
+async function concurrentStartRaceWrapper(){
+    timer2.startTimer();
+    let result = await concurrentStartRace();
+    log(timer2.getCurrentTime(), 'green', SECTION_3_2);
+    timer2.stopTimer();
+    log(`
+    Timer shows 0, as wrapped function returns only the default promise, if 
+    it had a return f2 or return f1 statement then the time of settling this promise would be 
+    visible. In this example both functions start at the same time, and promise related to f1 would be resolved after
+    100ms, and promise related to f2 would be resolved after 150ms
+    `, '#aaa', SECTION_3_2)
+}
+
+concurrentStartRaceWrapper();
+
+
+
+
+
+
+let timer3 = new Timer();
+
+let SECTION_3_3 = "Async execution order - promise.all"
+newLogSection(SECTION_3_3);
+newLogRow(SECTION_3_3);
+
+
+let resolve100_3_3 = resolveFunctionFactory(100, SECTION_3_3);
+let resolve150_3_3 = resolveFunctionFactory(150, SECTION_3_3);
+
+
+
+async function promiseAllRace(){
+    timer3.startTimer();
+
+    await Promise.all([
+        (async()=>{
+            let resolved = await resolve100_3_3(' start ', ' end' ,' resolved ')
+            log(timer3.getCurrentTime(), 'green', SECTION_3_3);
+            newLogRow(SECTION_3_3);
+            // resolve(resolved);
+        })(),
+        (async()=>{
+            let resolved = await resolve150_3_3(' start ', ' end' ,' resolved ')
+            log(timer3.getCurrentTime(), 'green', SECTION_3_3);
+            newLogRow(SECTION_3_3);
+            // resolve(resolved);
+        })()
+    ])
+    log(timer3.getCurrentTime(), 'green', SECTION_3_3);
+    timer3.stopTimer();
+}
+
+
+promiseAllRace();
+log(`Both start at the same time, then the first one (100) finishes, and then the second one (150)`
+, '#aaa', SECTION_3_3);
+
+
+
+
+
+
+let timer4 = new Timer();
+
+let SECTION_3_4 = "Async execution order - promise.reace"
+newLogSection(SECTION_3_4);
+newLogRow(SECTION_3_4);
+
+
+let resolve100_3_4 = resolveFunctionFactory(100, SECTION_3_4);
+let resolve150_3_4 = resolveFunctionFactory(150, SECTION_3_4);
+
+
+
+async function promiseRaceRace(){
+    timer4.startTimer();
+
+    await Promise.race([
+        (async()=>{
+            let resolved = await resolve100_3_4(' start ', ' end' ,' resolved ')
+            log(timer3.getCurrentTime(), 'green', SECTION_3_4);
+            newLogRow(SECTION_3_4);
+            // resolve(resolved);
+        })(),
+        (async()=>{
+            let resolved = await resolve150_3_4(' start ', ' end' ,' resolved ')
+            log(timer3.getCurrentTime(), 'green', SECTION_3_4);
+            newLogRow(SECTION_3_4);
+            // resolve(resolved);
+        })()
+    ])
+    log(timer4.getCurrentTime(), 'green', SECTION_3_4);
+    timer4.stopTimer();
+}
+
+
+promiseRaceRace();
+log(`Both promises are resolved, but the first one is returned as a result of the promise race`
+, '#aaa', SECTION_3_4);
+
+
+
+
+
+
+
+
+
 
 
 
