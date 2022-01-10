@@ -7,10 +7,23 @@
     <title>Async</title>
 </head>
 <body>
-    <style>body{background-color: #444;color:#ddd;font-family: Arial, Helvetica, sans-serif;}</style>
+
+    <style>
+        body{background-color: #444;color:#ddd;font-family: Arial, Helvetica, sans-serif;}
+        #animationTarget{
+            position: absolute;
+            width:50px;height: 50px;border-radius: 50%;background-color:red;
+            top: 100px;left:100px;
+            box-shadow: inset 2px -1px 28px -7px #000000, 
+                              2px -1px 28px -7px #fff,
+                              2px -1px 50px -7px #fff;
+        }
+    </style>
     <div id="outlet">
 
     </div>
+
+    <div id="animationTarget"></div>
 
     <script>
 
@@ -297,9 +310,123 @@ log(`Both promises are resolved, but the first one is returned as a result of th
 
 
 
+// *************************************
+// Promises then catch finally
+
+function rejectFunctionFactory(timeout, logSection){
+    return function(reason){
+        let rejectedPromise = new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                newLogRow(logSection);
+                log('[[ Rejected ]]: ', reason);
+                reject(reason)
+            }, timeout)
+        })
+    }
+}
+function resolveFunctionFactory2(timeout, logSection){
+    return function(value){
+        let rejectedPromise = new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                newLogRow(logSection);
+                log('[[ Resolved ]]: ', value)},
+                timeout)
+        })
+    }
+}
+
+function throwError(errorAsString){
+    throw new Error(errorAsString);
+}
 
 
 
+let SECTION_4 = ".then, .catch, .finally"
+newLogSection(SECTION_4);
+newLogRow(SECTION_4);
+
+let resolver = function(value) {newLogRow(SECTION_4); log(value, 'green', SECTION_4)};
+let rejecter = function(reason) {newLogRow(SECTION_4); log(value, 'red', SECTION_4)};
+reject_100_prom = rejectFunctionFactory(100, SECTION_4);
+resolve_120_prom = resolveFunctionFactory2(120, SECTION_4);
+resolve_80_prom = resolveFunctionFactory2(80, SECTION_4);
+
+let p = new Promise((resolver, rejecter)=>{
+    
+});
+
+
+
+// **** ANIMATION
+
+// animationTarget
+
+function move(animationTargetId, destination, timeInMiliseconds){
+        let framesPerSecond = 24;
+        let msInSecond = 1000;
+        let framesInterval = Math.floor(framesPerSecond / msInSecond);
+        let nrOfFrames = timeInMiliseconds * framesPerSecond / msInSecond;
+        let animationTarget = document.getElementById(animationTargetId);
+        let {x:xEnd, y:yEnd} = destination;
+        let {left: xStart, top: yStart} = animationTarget.getBoundingClientRect();
+        let xMovePerFrame = (xEnd - xStart)/nrOfFrames;
+        let yMovePerFrame = (yEnd - yStart)/nrOfFrames;
+        let {currentX, currentY} = {currentX: xStart, currentY: yStart};
+        let currentFrame = 0;
+        console.log('move Started')
+        let moveEnded = new Promise((resolve) => {
+                let interval = setInterval(()=>{
+                currentX += xMovePerFrame;
+                currentY += yMovePerFrame;
+                currentFrame += 1;
+                if(currentFrame % 200) console.log(destination)
+                animationTarget.style.left = currentX + 'px';
+                animationTarget.style.top = currentY + 'px';
+                if (currentFrame >= nrOfFrames) {
+                    clearInterval(interval);
+                    console.log('move resolved')
+                    resolve();
+                }
+            },framesInterval);
+        })
+        return moveEnded;
+    }
+
+function wait(timeInMiliseconds){
+    let waitingEnded = new Promise((resolve) => {
+        let timeout = setTimeout(()=>{
+            console.log('waiting ended')
+            resolve();
+        }, timeInMiliseconds)
+    })
+    console.log('waiting')
+    return waitingEnded;
+}
+
+// move('animationTarget', {x: 500, y:500}, 2000).then(wait(1000)).then(move('animationTarget', {x: -500, y: -500}, 1000));
+async function animateAwait(){
+    await move('animationTarget', {x: 500, y:500}, 2000)
+    await wait(1000)
+    await move('animationTarget', {x: 500, y: 100}, 1000);
+    await move('animationTarget', {x: 550, y: 1000}, 1000);
+    await wait(1000);
+    await move('animationTarget', {x: 100, y: 100}, 3000);
+
+}
+// animatieAwait();
+async function animateThen(){
+    // Here it is important to wrap handlers, so they return functions not taking any arguments:
+    move('animationTarget', {x:1000, y: 1000}, 3000)
+        .then(()=>{return wait(1000)})
+        .then(()=>{return move('animationTarget', {x:500,y:500}, 2000)})
+        .then(()=>{return wait(3000)})
+        .then(()=>{return move('animationTarget', {x:-500,y:-500}, 5000)})
+}
+async function animateAll(){
+    await animateAwait();
+    await animateThen();
+}
+animateAll();
 
 
 
