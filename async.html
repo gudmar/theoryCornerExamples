@@ -313,25 +313,30 @@ log(`Both promises are resolved, but the first one is returned as a result of th
 // *************************************
 // Promises then catch finally
 
+let timer5 = new Timer();
+
 function rejectFunctionFactory(timeout, logSection){
     return function(reason){
         let rejectedPromise = new Promise((resolve, reject)=>{
             setTimeout(()=>{
                 newLogRow(logSection);
-                log('[[ Rejected ]]: ', reason);
+                log('[[ Rejected ]]: ' + reason);
                 reject(reason)
             }, timeout)
         })
+        return rejectedPromise;
     }
 }
 function resolveFunctionFactory2(timeout, logSection){
     return function(value){
-        let rejectedPromise = new Promise((resolve, reject)=>{
+        let resolvedPromise = new Promise((resolve, reject)=>{
             setTimeout(()=>{
                 newLogRow(logSection);
-                log('[[ Resolved ]]: ', value)},
-                timeout)
+                log('[[ Resolved ]]: ' + value);
+                resolve(value);
+            },timeout)
         })
+        return resolvedPromise;
     }
 }
 
@@ -345,15 +350,39 @@ let SECTION_4 = ".then, .catch, .finally"
 newLogSection(SECTION_4);
 newLogRow(SECTION_4);
 
-let resolver = function(value) {newLogRow(SECTION_4); log(value, 'green', SECTION_4)};
-let rejecter = function(reason) {newLogRow(SECTION_4); log(value, 'red', SECTION_4)};
-reject_100_prom = rejectFunctionFactory(100, SECTION_4);
-resolve_120_prom = resolveFunctionFactory2(120, SECTION_4);
-resolve_80_prom = resolveFunctionFactory2(80, SECTION_4);
+let rejectPromise = rejectFunctionFactory(100, SECTION_4);
+let resolvePromise = resolveFunctionFactory2(120, SECTION_4);
 
-let p = new Promise((resolver, rejecter)=>{
-    
-});
+timer5.startTimer();
+function t() {return timer5.getCurrentTime()}
+
+resolvePromise('1 ')
+    .then(
+            ()=>{return resolvePromise('2 ' + t())}, 
+            ()=>{return rejectPromise('2 ' + t())}
+        )
+    .then(
+            ()=>{return resolvePromise('3 ' + t())}, 
+            ()=>{return rejectPromise('3 ' + t())}
+        )
+    .catch(
+            ()=>{newLogRow(SECTION_4); log('catch after 3' + t()); return 'catch 3' + t()}
+        )
+    .then(
+            ()=>{return resolvePromise('4 ' + t())}, 
+            ()=>{return rejectPromise('4 ' + t())}
+        )
+    .then(
+            ()=>{return rejectPromise('5 ' + t())}, // The first argument is always the resolve case, so
+            // if reject is passed as the only one arg, then the secod arg is by dafauld undefined and 
+            // the case on success will be finalized with rejection
+        )
+    .catch(
+            ()=>{newLogRow(SECTION_4); log('catch after 5: ' + t()); return 'catch 5' + t()}
+        )
+    .finally(
+            ()=>{newLogRow(SECTION_4); log('Final action  ' + t()); timer5.stopTimer();  'final'}
+        )
 
 
 
@@ -379,7 +408,6 @@ function move(animationTargetId, destination, timeInMiliseconds){
                 currentX += xMovePerFrame;
                 currentY += yMovePerFrame;
                 currentFrame += 1;
-                if(currentFrame % 200) console.log(destination)
                 animationTarget.style.left = currentX + 'px';
                 animationTarget.style.top = currentY + 'px';
                 if (currentFrame >= nrOfFrames) {
