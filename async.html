@@ -180,8 +180,16 @@ async function sequentialStartRace(){
     log(timer.getCurrentTime(), 'green', SECTION_3_1);
     newLogRow(SECTION_3_1);
     timer.stopTimer();
+    return f2;  // If not for this undefined would be returned, and in this case [[resolve150]]: [resolved]
+    return 'value' // in this case function outcome would resolve to 'value' finally, but in reality the 
+    // promise would be returned and would be resolved to 'value' afnter all promises are awaited.
 }
-sequentialStartRace();
+(async function wrapSequentialStart(){
+    newLogRow(SECTION_3_1);
+    let outcome = await sequentialStartRace();
+    log('Sequential async call will return: ', '#aaa')
+    log(outcome, 'orange')
+})();
 
 
 let timer2 = new Timer();
@@ -340,8 +348,12 @@ function resolveFunctionFactory2(timeout, logSection){
     }
 }
 
-function throwError(errorAsString){
-    throw new Error(errorAsString);
+function errorFactory(logSection){
+    return function(errorAsString){
+        newLogRow(logSection);
+        log(errorAsString);
+        throw new Error(errorAsString);
+    }
 }
 
 
@@ -383,6 +395,115 @@ resolvePromise('1 ')
     .finally(
             ()=>{newLogRow(SECTION_4); log('Final action  ' + t()); timer5.stopTimer();  'final'}
         )
+        // [[ Resolved ]]: 1
+        // [[ Resolved ]]: 2 120
+        // [[ Resolved ]]: 3 240
+        // [[ Resolved ]]: 4 360
+        // [[ Rejected ]]: 5 480
+        // catch after 5: 580
+        // Final action 580
+
+
+
+
+let timer6 = new Timer();
+let SECTION_5 = ".then, .catch, .finally - catch launched in the middle of the chain"
+newLogSection(SECTION_5);
+newLogRow(SECTION_5);
+
+let rejectPromise5 = rejectFunctionFactory(100, SECTION_5);
+let resolvePromise5 = resolveFunctionFactory2(120, SECTION_5);
+
+timer6.startTimer();
+function t() {return timer6.getCurrentTime()}
+
+resolvePromise5('1a ')
+    .then(
+            ()=>{return resolvePromise5('2a ' + t())}, 
+            ()=>{return rejectPromise5('2a ' + t())}
+        )
+    .then(
+            ()=>{return rejectPromise5('3a ' + t())}, 
+            ()=>{return rejectPromise5('3a ' + t())}
+        )
+    .catch(
+            ()=>{newLogRow(SECTION_5); log('catch after 3a' + t()); return 'catch 3a' + t()}
+        )
+    .then(
+            ()=>{
+                log(`this then reject function (second callback) will never be called, as there was a catch before this
+                that was fired and this did the job.`)
+                return rejectPromise5('4a ' + t())
+            }, 
+            ()=>{return rejectPromise5('4a ' + t())}
+        )
+    .then(
+            ()=>{return rejectPromise5('5a ' + t())}, // The first argument is always the resolve case, so
+            // if reject is passed as the only one arg, then the secod arg is by dafauld undefined and 
+            // the case on success will be finalized with rejection
+        )
+    .catch(
+            ()=>{newLogRow(SECTION_5); log('catch after 5a: ' + t()); return 'catch 5a' + t()}
+        )
+    .finally(
+            ()=>{newLogRow(SECTION_5); log('Final action  ' + t()); timer6.stopTimer();  'final'}
+        )
+
+
+
+
+let timer7 = new Timer();
+let SECTION_6 = ".then, .catch, .finally - throwing errors"
+newLogSection(SECTION_6);
+newLogRow(SECTION_6);
+
+let rejectPromise6 = rejectFunctionFactory(100, SECTION_6);
+let resolvePromise6 = resolveFunctionFactory2(120, SECTION_6);
+let throeError6 = errorFactory(SECTION_6);
+
+
+timer6.startTimer();
+function t() {return timer6.getCurrentTime()}
+
+resolvePromise6('1a ')
+    .then(
+            ()=>{return resolvePromise6('2a ' + t())}, 
+            ()=>{return rejectPromise6('2a ' + t())}
+        )
+    .then(
+            ()=>{
+                    throwError6('Error in 3a, before promise resolved')
+                    return resolvePromise6('3a ' + t())
+            }, 
+            ()=>{return rejectPromise6('3a ' + t())}
+        )
+    .catch(
+            ()=>{newLogRow(SECTION_6); 
+                log('[[ Catch ]]: ' + t()); 
+                log(' catch after 3a called, due to error in previous resolved function ', '#aaa'); 
+                return Promise.reject();
+                return 'catch 3a' + t()}
+        )
+    .then(
+            ()=>{
+                newLogRow(SECTION_6);
+                log(` This is called, because last then was resolved. With error, but resolved.`, '#aaa')
+                return rejectPromise6('4a ' + t())
+            }, 
+            ()=>{return rejectPromise6('4a ' + t())}
+        )
+    .then(
+            ()=>{return rejectPromise6('5a ' + t())}, // The first argument is always the resolve case, so
+            // if reject is passed as the only one arg, then the secod arg is by dafauld undefined and 
+            // the case on success will be finalized with rejection
+        )
+    .catch(
+            ()=>{newLogRow(SECTION_6); log('catch after 5a: ' + t()); return 'catch 5a' + t()}
+        )
+    .finally(
+            ()=>{newLogRow(SECTION_6); log('Final action  ' + t()); timer6.stopTimer();  'final'}
+        )
+
 
 
 
@@ -461,10 +582,89 @@ animateAll();
 
 
 
+// let SECTION_6 = ".then with values returned"
+// newLogSection(SECTION_6);
+// newLogRow(SECTION_6);
+
+// let rejectPromise6 = rejectFunctionFactory(100, SECTION_6);
+// let resolvePromise6 = resolveFunctionFactory2(120, SECTION_6);
+
+// resolvePromise6().then((val)=>{
+//     newLogRow(SECTION_6);
+//     log(val)
+// })
 
 
 
 
+
+
+
+
+function promiseWithError(){
+    return new Promise((resolve, reject) => {
+        throw new Error('error thrown');
+        resolve('resolved');
+    })
+}
+(async function awaitPromiseWithError() {
+    console.log('%cresolving promise with error ', 'background-color: yellow');
+    let outcome = await promiseWithError().catch(()=>{return 'error handle'});
+    console.log(outcome);
+    console.log('%c'+outcome, 'background-color: yellow');
+})();
+
+
+(async function whatThenReturns(){
+    let p1 = new Promise((resolve)=>{
+        resolve('whatThenReturns resolved')
+    });
+    let p2 = new Promise((reject)=>{
+        reject('thenRejected')
+    });
+
+    console.log(await p1.then(()=>{}))//{return 'then resolved' }))
+    console.log(await p1.then(()=>{return 'then resolved' }))
+    console.log(await p1.then('then with just a value'));
+    console.log(await p2.then('resolve P2', 'reject P2'))
+})();
+
+
+
+(async function executionOrder(){
+    let pOK = () => { return new Promise((resolve)=>{resolve('Resolved')}) };
+    let pNOK = () => { return new Promise((reject)=>{reject('Rejected')}) };
+
+    let resolved = pOK().then(pOK, pNOK);
+    let rejected = pOK().then(pNOK, pOK);
+    console.log(resolved);
+    console.log(rejected);
+})();
+
+
+
+(async function canResolveAfterRejection(){
+
+    let SECTION_7 = "can resolve after rejection in chain"
+    newLogSection(SECTION_7);
+    newLogRow(SECTION_7);
+
+    let pOK = () => { 
+        newLogRow(SECTION_7);
+        log('resolved', 'green')
+        return new Promise((resolve)=>{resolve('Resolved')}) 
+    };
+    let pNOK = () => { 
+        newLogRow(SECTION_7);
+        log('rejected', 'red')
+        return new Promise((reject)=>{reject('Rejected')}) 
+    };
+
+    canResolve = pOK().then(pOK,pNOK).then(pNOK,pOK).then(pOK, pNOK)
+    newLogRow(SECTION_7);
+    log(await canResolve)
+
+})();
 
 
 
