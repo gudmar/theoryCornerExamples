@@ -926,7 +926,88 @@ function asyncErrorFactory(timeout, logSection){
     log(result + ' ' + timer8.getCurrentTime(), 'green', SECTION_8_4);
     // resolves: with '5' value after 0ms, as this is not a promise and its value was available immediately
 })();
+setTimeout(()=>{timer8.stopTimer()}, 2000);
 
+// ********** Promise.race()
+let timer9 = new Timer();
+timer9.startTimer();
+let SECTION_9 = "Promise.race()";
+newLogSection(SECTION_9);
+
+(async function promiseRaceMixed(){
+    let SECTION_9_1 = "Promise.race(): Mixed";
+    newLogSection(SECTION_9_1);
+    newLogRow(SECTION_9_1);    
+    let failPromise100 = rejectFunctionFactory(100, SECTION_9_1);
+    let resolvePromise150 = resolveFunctionFactory2(150, SECTION_9_1);
+    let resolvePromise170 = resolveFunctionFactory2(170, SECTION_9_1);
+    let failPromise200 = rejectFunctionFactory(200, SECTION_9_1);
+    let promises = function* (){
+        yield failPromise100(100); yield resolvePromise150(150); 
+        yield failPromise200(200); yield resolvePromise170(170);
+    }
+    let result = await Promise.race(promises())
+        .then(
+            (value)=>{return Promise.resolve('resolved '+value)},
+            (reason)=>{return Promise.resolve('rejected'+reason)}
+        );
+    log(result + ' ' + timer9.getCurrentTime(), 'green', SECTION_9_1);
+    // rejects with value 100 in 100ms
+    // Handing the promise rejection is importante, as if an error is thrown, 
+    // there may be no value passed
+})();
+
+
+(async function syncErrorWithRace(){
+    let SECTION_8_4 = "Promise.race(): Error thrown before the promise returned";
+    newLogSection(SECTION_8_4);
+    newLogRow(SECTION_8_4);    
+    let asyncErr = asyncErrorFactory(120, SECTION_8_4);
+    let syncErr = errorFactory(SECTION_8_4)
+    let failPromise100 = rejectFunctionFactory(100, SECTION_8_4);
+    let resolvePromise150 = resolveFunctionFactory2(150, SECTION_8_4);
+    let resolvePromise170 = resolveFunctionFactory2(170, SECTION_8_4);
+    let failPromise200 = rejectFunctionFactory(200, SECTION_8_4);
+    let promises = function* (){
+        yield failPromise100(100); yield syncErr('syncErrFailing'); 
+        yield resolvePromise150(150); yield failPromise200(200);
+        yield resolvePromise170(170); yield asyncErr('asyncErrFailing')
+    }
+    let result = await Promise.race(promises()).then(
+            (value)=>{return Promise.resolve('resolved '+value)},
+            (reason)=>{return Promise.resolve('rejected'+reason)}
+        );
+    log(result + ' ' + timer9.getCurrentTime(), 'green', SECTION_8_4);
+    // resolves: with '5' value after 0ms, as this is not a promise and its value was available immediately
+})();
+
+
+(async function asyncErrorWithRace(){
+    let SECTION_8_4 = "Promise.race(): async error thrown";
+    newLogSection(SECTION_8_4);
+    newLogRow(SECTION_8_4);    
+    let asyncErr = asyncErrorFactory(20, SECTION_8_4);
+    let failPromise100 = rejectFunctionFactory(100, SECTION_8_4);
+    let resolvePromise150 = resolveFunctionFactory2(150, SECTION_8_4);
+    let resolvePromise170 = resolveFunctionFactory2(170, SECTION_8_4);
+    let failPromise200 = rejectFunctionFactory(200, SECTION_8_4);
+    let promises = function* (){
+        yield failPromise100(100);
+        yield resolvePromise150(150); yield failPromise200(200);
+        yield resolvePromise170(170); yield asyncErr('asyncErrFailing')
+    }
+    let result = await Promise.race(promises()).then(
+            (value)=>{return Promise.resolve('resolved '+value)},
+            (reason)=>{return Promise.resolve('rejected'+reason)}
+        );
+    log(result + ' ' + timer9.getCurrentTime(), 'green', SECTION_8_4);
+    // resolves: with '5' value after 0ms, as this is not a promise and its value was available immediately
+})();
+
+
+
+
+setTimeout(()=>{timer9.stopTimer()}, 2000);
 
 
     </script>
