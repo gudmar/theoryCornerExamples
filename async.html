@@ -374,11 +374,12 @@ resolvePromise('1 ')
             ()=>{return rejectPromise('2 ' + t())}
         )
     .then(
-            ()=>{return resolvePromise('3 ' + t())}, 
+            ()=>{return rejectPromise('3 ' + t())}, 
             ()=>{return rejectPromise('3 ' + t())}
         )
     .catch(
             ()=>{newLogRow(SECTION_4); log('catch after 3' + t()); return 'catch 3' + t()}
+            
         )
     .then(
             ()=>{return resolvePromise('4 ' + t())}, 
@@ -503,6 +504,7 @@ resolvePromise6('1a ')
     .finally(
             ()=>{newLogRow(SECTION_6); log('Final action  ' + t()); timer6.stopTimer();  'final'}
         )
+
 
 
 
@@ -664,6 +666,265 @@ function promiseWithError(){
     newLogRow(SECTION_7);
     log(await canResolve)
 
+})();
+
+
+
+
+// let pOK = (val)=>{console.log('Resolved'+val); return new Promise((resolve)=>{resolve(val)})}
+// let pNOK = (val)=>{console.log('Rejected'+val); return new Promise((reject)=>{reject(val)})}
+
+
+(async function evaluate(){
+let pOK = function(val){ return function() {console.log('Resolved'+val);return Promise.resolve(val)}}
+let pNOK = function(val){ return function(){console.log('Rejected'+val);return Promise.reject(val)}}
+let err = function(val){return function(){throw new Error(val); return Promise.resolve(val)}}
+    let outcome = pOK(0)()
+        .then(pOK(1),pNOK(1))
+        .then(pOK(3),pNOK(3))
+        .catch(pNOK(2))
+        .then(pOK(3),pNOK(3))
+        .finally(pNOK('fin'))
+        .then(pOK(4),pNOK(4))
+        console.log(await outcome)
+})();
+
+
+(async function evaluate(){
+let pOK = function(val){ return function() {console.log('Resolved'+val);return Promise.resolve(val)}}
+let pNOK = function(val){ return function(){console.log('Rejected'+val);return Promise.reject(val)}}
+let err = function(val){return function(){throw new Error(val); return Promise.resolve(val)}}
+
+    let outcome0 = pOK(0)()
+        .then(pOK(0),pNOK(0))
+        .finally(pOK('fin0'))
+        // Resolved1
+        // Resolvedfin1
+
+    let outcome1 = pOK(0)()
+        .then(pOK(1),pNOK(1))
+        .finally(pNOK('fin1'))
+        // Resolved1
+        // Uncaught error -> finally failed
+
+    let outcome2 = pOK(0)()
+        .then(pNOK(2),pNOK(2))
+        .finally(pOK('fin2'))
+        // Rejected2
+        // Resolvedfin2
+        // Uncaught error -> no catch, rejection before finally,
+        // but finally is not for catching errors
+
+    let outcome3 = pOK(0)()
+        .then(err(3),pNOK(3))
+        .finally(pOK('fin3'))
+        // Rejected3
+        // Resolvedfin3
+        // Uncaught error -> no catch, rejection (error thrown) before finally,
+        // but finally is not for catching errors
+
+    console.log(await outcome1); // fin1
+    console.log(await outcome2); // fin2
+    console.log(await outcome3); // fin3
+        
+})();
+
+
+
+// allSettled
+
+(async function allSettled(){
+let pOK = function(val){ return function() {console.log('Resolved'+val);return Promise.resolve(val)}}
+let pNOK = function(val){ return function(){console.log('Rejected'+val);return Promise.reject(val)}}
+let err = function(val){return function(){throw new Error(val); return Promise.resolve(val)}}
+    let iterable = function*(){
+        yield pOK(1)(); yield pNOK(2)(); yield err(3)(); yield pOK(4)();
+    }
+    console.log(Promise.allSettled(iterable()));
+})(); // This returns a rejected promise, as there is an error thrown
+
+(async function allSettled(){
+let pOK = function(val){ return function() {console.log('Resolved'+val);return Promise.resolve(val)}}
+let pNOK = function(val){ return function(){console.log('Rejected'+val);return Promise.reject(val)}}
+    let iterable = function*(){
+        yield pOK(1)(); yield pNOK(2)(); yield pOK(3)();
+    }
+    console.log(Promise.allSettled(iterable()));
+})(); // This returns a rejected promise, as there is an error thrown
+
+
+// all
+
+(async function allReject(){
+let pOK = function(val){ return function() {console.log('Resolved'+val);return Promise.resolve(val)}}
+let pNOK = function(val){ return function(){console.log('Rejected'+val);return Promise.reject(val)}}
+    let iterable = function*(){
+        yield pOK(1)(); yield pNOK(2)(); yield pOK(3)();
+    }
+    console.log(Promise.all(iterable()));
+})(); // Rejected due to the pNOK, promise result 2
+
+(async function allReject(){
+let pOK = function(val){ return function() {console.log('Resolved'+val);return Promise.resolve(val)}}
+let err = function(val){return function(){throw new Error(val); return Promise.resolve(val)}}
+    let iterable = function*(){
+        yield pOK(1)(); yield err(2)(); yield pOK(3)();
+    }
+    console.log(Promise.all(iterable()));
+})(); // Rejected due to the err; result: error..
+
+
+
+(async function allResolve(){
+let pOK = function(val){ return function() {console.log('Resolved'+val);return Promise.resolve(val)}}
+let pNOK = function(val){ return function(){console.log('Rejected'+val);return Promise.reject(val)}}
+    let iterable = function*(){
+        yield pOK(1)(); yield pOK(2)(); yield pOK(3)();
+    }
+    console.log(Promise.all(iterable()));
+})(); //  Resolved; [1,2,3]
+
+
+(async function allResolve(){
+    console.log(Promise.all([1,2,3]));
+})(); //  Resolved; [1,2,3]
+
+
+
+
+
+
+
+
+// **** any
+let timer8 = new Timer();
+let SECTION_8 = "Promise.any()";
+let rejectPromise8 = rejectFunctionFactory(100, SECTION_8);
+let resolvePromise8 = resolveFunctionFactory2(120, SECTION_8);
+let throeError8 = errorFactory(SECTION_8);
+
+timer8.startTimer();
+
+newLogSection(SECTION_8);
+
+(async function emptyArrayAny(){
+    let SECTION_8_1 = "Promise.any(): empty arr";
+    newLogSection(SECTION_8_1);
+    newLogRow(SECTION_8_1);
+    log('An empty array [] as an arg ', '#aaa', SECTION_8_1);
+    let result = await Promise.any([]).catch((reason)=>{
+        return Promise.resolve(reason);
+    });
+    newLogRow(SECTION_8_1);
+    log(result, 'red', SECTION_8_1);
+    // AggregateError, all promises were rejected
+})();
+
+(async function arrayValuesAny(){
+    let SECTION_8_2 = "Promise.any(): arr with no promises";
+    newLogSection(SECTION_8_2);
+    newLogRow(SECTION_8_2);    
+    let result = await Promise.any([1, 2, 3, 4, 5]);
+    log('An array with values instead of promisses is given:  ', '#aaa', SECTION_8_2);
+    log('Resolved value: ' + result + ' time:' + timer8.getCurrentTime(), 'white', SECTION_8_2);
+    // resolved with value 1 time 0;
+})();
+
+(async function allRejectAny(){
+    let SECTION_8_3 = "Promise.any(): All promises reject";
+    newLogSection(SECTION_8_3);
+    newLogRow(SECTION_8_3);    
+
+    let failPromise50 = rejectFunctionFactory(50, SECTION_8_3);
+    let failPromise100 = rejectFunctionFactory(100, SECTION_8_3);
+    let failPromise150 = rejectFunctionFactory(150, SECTION_8_3);
+    let failPromise200 = rejectFunctionFactory(200, SECTION_8_3);
+
+    let promises = function* (){
+        yield failPromise100(100); yield failPromise50(50); 
+        yield failPromise150(150); yield failPromise200(200)
+    }
+    newLogRow(SECTION_8_3);
+    log('All promisses fail', '#aaa', SECTION_8_3);
+    let result = await Promise.any(promises()).catch((reason)=>{
+        log(reason, 'red'); return Promise.resolve(reason);
+    });
+
+    log(result + ' ' + timer8.getCurrentTime(), 'red', SECTION_8_3);
+})();
+
+
+(async function allResolveAny(){
+    let SECTION_8_3 = "Promise.any(): All promises resolve";
+    newLogSection(SECTION_8_3);
+    newLogRow(SECTION_8_3);    
+    log('First resolved promise is returned', '#aaa', SECTION_8_3);
+    let failPromise50 = rejectFunctionFactory(50, SECTION_8_3);
+    let failPromise100 = rejectFunctionFactory(100, SECTION_8_3);
+    let resolvePromise150 = resolveFunctionFactory2(150, SECTION_8_3);
+    let resolvePromise170 = resolveFunctionFactory2(170, SECTION_8_3);
+    let failPromise200 = rejectFunctionFactory(200, SECTION_8_3);
+    let promises = function* (){
+        yield failPromise100(100); yield failPromise50(50); 
+        yield resolvePromise150(150); yield failPromise200(200);
+        yield resolvePromise170(170)
+    }
+    let result = await Promise.any(promises());
+    log(result + ' ' + timer8.getCurrentTime(), 'green', SECTION_8_3);
+    // resolves: with resolvePromise150 value that is 150 after 150ms
+})();
+
+
+(async function someNoPromisesAny(){
+    let SECTION_8_4 = "Promise.any(): Some values in iterable are not promises";
+    newLogSection(SECTION_8_4);
+    newLogRow(SECTION_8_4);    
+    let failPromise50 = rejectFunctionFactory(50, SECTION_8_4);
+    let failPromise100 = rejectFunctionFactory(100, SECTION_8_4);
+    let resolvePromise150 = resolveFunctionFactory2(150, SECTION_8_4);
+    let resolvePromise170 = resolveFunctionFactory2(170, SECTION_8_4);
+    let failPromise200 = rejectFunctionFactory(200, SECTION_8_4);
+    let promises = function* (){
+        yield failPromise100(100); yield failPromise50(50); 
+        yield resolvePromise150(150); yield failPromise200(200);
+        yield resolvePromise170(170); yield 5;
+    }
+    let result = await Promise.any(promises());
+    log(result + ' ' + timer8.getCurrentTime(), 'green', SECTION_8_4);
+    // resolves: with '5' value after 0ms, as this is not a promise and its value was available immediately
+})();
+
+function asyncErrorFactory(timeout, logSection){
+    return function(reason){
+        newLogRow(logSection);
+        return new Promise((resolve, reject)=>{
+            setTimeout(() => {
+                log(reason, 'red', logSection);
+                throw new Error(timeout);
+            }, timeout);
+        })
+    }
+}
+
+
+(async function errorWithAny(){
+    let SECTION_8_4 = "Promise.any(): Error thrown";
+    newLogSection(SECTION_8_4);
+    newLogRow(SECTION_8_4);    
+    let err = asyncErrorFactory(120, SECTION_8_4);
+    let err1 = errorFactory(SECTION_8_4)
+    let failPromise100 = rejectFunctionFactory(100, SECTION_8_4);
+    let resolvePromise150 = resolveFunctionFactory2(150, SECTION_8_4);
+    let resolvePromise170 = resolveFunctionFactory2(170, SECTION_8_4);
+    let failPromise200 = rejectFunctionFactory(200, SECTION_8_4);
+    let promises = function* (){
+        yield failPromise100(100); yield err('Failing'); 
+        yield resolvePromise150(150); yield failPromise200(200);
+        yield resolvePromise170(170); yield err1('Failing1')
+    }
+    let result = await Promise.any(promises());
+    log(result + ' ' + timer8.getCurrentTime(), 'green', SECTION_8_4);
+    // resolves: with '5' value after 0ms, as this is not a promise and its value was available immediately
 })();
 
 
