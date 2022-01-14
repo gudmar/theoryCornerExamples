@@ -1010,6 +1010,24 @@ newLogSection(SECTION_9);
 setTimeout(()=>{timer9.stopTimer()}, 2000);
 
 
+// ********** Promise.resonve()
+let timer10 = new Timer();
+timer9.startTimer();
+let SECTION_10 = "Promise.resolve()";
+newLogSection(SECTION_10);
+(async function(){
+    let res = Promise.resolve('someVal');
+    newLogRow(SECTION_10);
+    log(JSON.stringify(res), 'green');
+    newLogRow(SECTION_10);
+    let awaited = await res;
+    log(awaited + ' ' + timer10.getCurrentTime(), 'orange', SECTION_10)
+})()
+
+setTimeout(()=>{timer10.stopTimer()}, 2000);
+
+
+
     </script>
     
 </body>
