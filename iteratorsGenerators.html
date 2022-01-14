@@ -54,7 +54,7 @@ let primaryIterator = function(){
     }
 }
 
-// **** usage of primary interator
+// **** usage of primary iterator
 
 let primaryI =  primaryIterator();
 console.dir(primaryI);
@@ -159,7 +159,6 @@ let iterableWrapped = {
     }
     },
     [Symbol.iterator]: function(){
-        console.log(this.iterator())
         return this.iterator()
     }
 }
