@@ -1,0 +1,140 @@
+<!-- This is a class for binding DOM elements with application state -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        .input-box{
+            position: relative; width: 3rem; height: 1rem; border: solid black thin;margin:1rem;
+        }
+        .screen{
+            position: relative; width: 80%; height: 25rem; border: solid black thin;margin:1rem;
+            border-radius: 10px;background-color: black; color:#bbb;font-family: 'Courier New', Courier, monospace;
+            overflow: auto;padding: 5px;
+        }
+    </style>
+    <div id="output" class = "screen"></div>
+    <div id="i1" contenteditable="true" class="input-box">5</div>
+    <div id="i2" contenteditable="true" class="input-box">6</div>
+    <div id="i3" contenteditable="true" class="input-box">7</div>
+    <button id="b1">Proxy 1: toConsole</button>
+    <button id="b12">set Proxy 1</button>
+
+    <script>
+class DOMWithStateBinder{
+    constructor(){
+        if (DOMWithStateBinder.instance) return DOMWithStateBinder.instance;
+        DOMWithStateBinder.instance = this; // A singleton pattern, if there is a instance of this object 
+        // return it, otherwise fill instatce with this object
+        this.DB = new Map();
+    }
+    _traps(target, htmlElement, propName){
+        return {
+            get: function(target, key){
+               return target.val; 
+            },
+            set: function(target, key, newVal){
+                target.val = newVal;
+                htmlElement[propName] = newVal;
+                return true;
+            }
+        }
+    }
+
+    bindFullProp(cssSelector, propName){
+        let element = document.querySelector(cssSelector);
+        let currentBinding = this.DB.get(element);
+        if (currentBinding) {
+            if (currentBinding.props[propName]){
+                return currentBinding.props[propName]
+            }
+        } 
+        // create new binding
+        if (!currentBinding) this.DB.set(element,{props:{}, attribs: {}})
+        currentBinding = this.DB.get(element);
+        currentBinding.props[propName] = {};
+        currentBinding.props[propName].proxy = this._getNewPropBinding(element, propName)
+        currentBinding.props[propName].event = this._getNewPropEvent(element, currentBinding.props[propName].proxy, propName)
+        return currentBinding.props[propName].proxy;
+    }
+_getNewPropEvent(htmlElement, proxy, propName){
+    htmlElement.addEventListener('focusout', ()=>{
+        proxy.val = htmlElement[propName];
+    })
+}
+_getNewPropBinding(htmlElement, propName){
+    let target = {val: htmlElement[propName]}
+    let proxy = new Proxy(target, this._traps(target, htmlElement, propName));
+    return proxy;
+}
+}       
+
+
+var binder = new DOMWithStateBinder();
+let display = binder.bindFullProp('#output', 'innerHTML');
+function log(content){
+    console.log(content)
+    if(typeof content === 'object') {content = JSON.stringify(content)};
+    display.val = display.val + content;
+}
+function clearDisplay(){display.val = '';}
+
+
+(function testSingleton(){
+    let a = new DOMWithStateBinder();
+    let b = new DOMWithStateBinder(); 
+    if (a === b) {console.log('Singleton works');}
+    else {console.log('This is not a singleton')}
+})();
+
+(function testSettingStateBinder(){
+    let sb = new DOMWithStateBinder();
+    let el1 = document.querySelector('#i1');
+    let el1Changer = sb.bindFullProp('#i1','innerHTML');
+    console.log(el1Changer.proxy)
+    console.log(el1Changer)
+    let testValues = ['Corvette', 'Peugeot 206', 'Skoda Favorit'];
+    let i = 0;
+    let interval = setInterval(()=>{
+        if (i >= testValues.length) clearInterval(interval);
+        else el1Changer.prox = testValues[i];
+        console.log(el1Changer.innerHTML)
+        i++;
+    }, 1000)
+
+    let el1ContentEditableChanger = sb.bindFullProp('#i1', 'contentEditable');
+    el1ContentEditableChanger.val = false;
+    console.log(`ContentEditable of the first box id : ${el1ContentEditableChanger.val}`);
+    setTimeout(()=>{
+        el1ContentEditableChanger.val = true;
+        console.log(`ContentEditable of the first box id : ${el1ContentEditableChanger.val}`);
+    }, 7000)
+
+    let el1BGColor = sb.bindFullProp('#i1', 'style.backgroundColor');
+    el1BGColor.val = 'red';
+
+    document.getElementById('b1').addEventListener('click',()=>{
+        console.log(el1Changer);
+        console.log(el1ContentEditableChanger);
+        console.log(el1BGColor);
+        log(el1Changer)
+        log(el1ContentEditableChanger)
+        log(el1BGColor)
+        log(`<div>${el1Changer.val}</div>`)
+        log(`<div>${el1ContentEditableChanger.val}</div>`)
+        log(`<div>${el1BGColor.val}</div>`)
+    })
+
+
+    document.getElementById('b12').addEventListener('click',()=>{
+        el1Changer.val = 'contentChanged'
+    })
+})()
+    </script>
+</body>
+</html>
