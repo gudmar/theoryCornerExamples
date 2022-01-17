@@ -24,6 +24,7 @@
     <div id="i3" contenteditable="true" class="input-box">7</div>
     <button id="b1">Proxy 1: toConsole</button>
     <button id="b12">set Proxy 1</button>
+    <button id="b13">delete Proxy 1</button>
 
     <script>
 class DOMWithStateBinder{
@@ -48,6 +49,7 @@ class DOMWithStateBinder{
 
     bindFullProp(cssSelector, propName){
         let element = document.querySelector(cssSelector);
+        if (!element) throw new Error('No such element in DOM')
         let currentBinding = this.DB.get(element);
         if (currentBinding) {
             if (currentBinding.props[propName]){
@@ -62,10 +64,33 @@ class DOMWithStateBinder{
         currentBinding.props[propName].event = this._getNewPropEvent(element, currentBinding.props[propName].proxy, propName)
         return currentBinding.props[propName].proxy;
     }
+
+    removeBinding(cssSelector, propName){
+        let element = document.querySelector(cssSelector);
+        if (!element) throw new Error('No such element in DOM')
+        let currentBinding = this.DB.get(element);
+        if (!currentBinding) throw new Error('No such binding, nothing to remove');
+        if (currentBinding.props[propName].event){
+
+        }
+        element.removeEventListener(currentBinding.props[propName].event.trigger, currentBinding.props[propName].event.handler);
+        delete currentBinding.props[propName];
+        console.log(currentBinding.props)
+    }
+
 _getNewPropEvent(htmlElement, proxy, propName){
-    htmlElement.addEventListener('focusout', ()=>{
+    // let proxy = bindingKeeper.proxy;
+    // let event = bindingKeeper.event;
+    
+    let callback = ()=>{
         proxy.val = htmlElement[propName];
-    })
+    };
+    htmlElement.addEventListener('focusout', callback);
+    // event.handler = callback;
+    // event.trigger = 'focusout'
+    return {
+        handler: callback, trigger: 'focusout'
+    }
 }
 _getNewPropBinding(htmlElement, propName){
     let target = {val: htmlElement[propName]}
@@ -133,6 +158,10 @@ function clearDisplay(){display.val = '';}
 
     document.getElementById('b12').addEventListener('click',()=>{
         el1Changer.val = 'contentChanged'
+    })
+
+    document.getElementById('b13').addEventListener('click',()=>{
+        sb.removeBinding('#i1', 'innerHTML')
     })
 })()
     </script>
