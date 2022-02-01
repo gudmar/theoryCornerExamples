@@ -6,8 +6,6 @@ class WrappedComponent extends HTMLElement {
         let template = document.createElement('template');
         template.innerHTML = this.getWrappedContent(this.getText());
         let content = template.content.cloneNode(true);
-        // console.log(content)
-        // let content = this.getWrappedContent(this.getText());
         this.shadowRoot.appendChild(content);
     }
     getWrappedContent(text){
