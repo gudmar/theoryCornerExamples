@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>iframe</title>
+</head>
+<body>
+    <iframe sandbox="allow-scripts allow-same-origin" src="./iframe.html"></iframe>
+    <button onclick="postMessage()">replace content</button>
+    <script>
+        console.dir(window.frames[0])
+        console.dir(document.querySelector('iframe').contentDocument);
+        function postMessage(e){
+            
+            let frame  = window.frames[0];
+            frame.contentWindow.postMessage('Some content to replace', null);
+        }
+        window.onmessage = ((e)=>{document.write(e.data)})
+    </script>
+</body>
+</html>
