@@ -9,8 +9,37 @@
     <title>DecoratorHTML</title>
 </head>
 <body>
+    <style>
+        .outside-wrapped-styling{
+            width: 300px;
+            color: yellow;
+        }
+    </style>
     <element-wrapper>
         <span slot="content-outlet"><wrapped-element></wrapped-element></span>
     </element-wrapper>
+
+    <script>
+        let slotOutlet = document.querySelector("[slot='content-outlet']");
+        function getNewContent(size){
+            let randString = '';
+            for (let i = 0; i < size; i++){
+                randString += ' ' + getRandString();
+            }
+            return randString;
+        }
+        function getRandString(){
+            let randNum = (Math.random() * 10**17).toString(36);
+            return randNum;
+        }
+        function changeModalContent(){
+            slotOutlet.innerHTML = `
+                <span slot="content-outlet">
+                    <div class="outside-wrapped-styling">${this.getNewContent(300)}</div>
+                </span>
+            `
+        }
+        let int = setTimeout(changeModalContent, 2000);
+    </script>
 </body>
 </html>

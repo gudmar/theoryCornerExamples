@@ -1,4 +1,4 @@
-// https://blog.logrocket.com/a-practical-guide-to-typescript-decorators/
+ // https://blog.logrocket.com/a-practical-guide-to-typescript-decorators/
 
 // Reflect metadata
 // https://github.com/rbuckton/reflect-metadata
@@ -44,8 +44,8 @@ class PerformOnEachArrayElement {
 
 }
 
-function performance(target:Object, propKey: string ){
-
+function performance(target:Object, propKey: string, descriptor:Object ){
+    
 }
 
 
