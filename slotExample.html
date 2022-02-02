@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Slot</title>
+</head>
+<body>
+    <style>
+        .not-shadow-list{
+            background-color: red;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        li{
+            margin:10px;
+            margin-left: 40px;
+        }
+        .wrapper{
+            background-color:black;
+            color:white;
+        } 
+        /* .wrapper will have no effect, as it is inside a shadow DOM */
+    </style>
+    <template id="personData">
+        <style>
+            .not-shadow-list{
+                background-color: yellow;
+                color:black;
+            }
+            .wrapper{
+                background-color:white;
+                color:black;
+                font-family: Arial, Helvetica, sans-serif;
+                border-radius: 5px;
+                width: 300px;
+            }
+            ::slotted(span){
+                background-color:green;
+                color:white;
+                border-radius: 5px;
+                padding: 3px;
+                margin: 5px;
+                font-weight: lighter;
+            }
+            .row{
+                margin: 15px;
+                font-weight: bold;
+                background-color: lightgreen;
+            }
+        </style>
+        <div class="wrapper">
+            <div class="row"><span class="label">Name: </span><slot name="name">John</slot></div>
+            <div class="row"><span class="label">Family name: </span><slot name="family-name">John</slot></div>
+            <div class="row"><span class="label">Data: </span><slot name="data">Na</slot></div>
+        </div>
+    </template>
+
+    <person-data>
+        <span slot="name"></span>
+        <span slot="family-name"></span>
+        <div slot="data"></div>
+    </person-data>
+    
+    <script>
+        function replaceData(){
+            let name = document.querySelector('[slot="name"]');
+            let famName = document.querySelector('[slot="family-name"]');
+            let data = document.querySelector('[slot="data"]');
+            let newDataSetGetter = nextDataSetGetter();
+            function replace(){
+                // console.log(data.childNodes)
+                
+                
+                let newDataSet = newDataSetGetter.nextValue();
+                console.log(newDataSet.data)
+                name.innerHTML = newDataSet.name;
+                famName.innerHTML = newDataSet.familName;
+                try{data.removeChild(data.childNodes[0]);}
+                catch{};
+                data.appendChild(newDataSet.data);
+            }
+            const int = setInterval(replace, 2000);
+        }
+        
+        const dataSet = [
+            {name: 'Genowefa', familName:'Bąk', data:getDataElement(0)},
+            {name: 'Janusz', familName:'Bąkiewicz', data:getDataElement(1)},
+            {name: 'Eleonora', familName:'Bąkowska', data:getDataElement(2)},
+        ]
+        function getDataElement(nr){
+            const data = [
+                ['Age: 32', 'ShoeSize: 43', 'EyeColor: blue', 'Height: 168cm'],
+                ['Age: 59', 'ShoeSize: 52', 'EyeColor: gray', 'Height: 188cm'],
+                ['Age: 25', 'ShoeSize: 40', 'EyeColor: green'],
+            ]
+            let list = document.createElement('ul');
+            list.classList.add('not-shadow-list')
+            let dataSet = data[nr];
+            for(let dataBit of dataSet){
+                let li = document.createElement('li');
+                li.innerHTML = dataBit;
+                list.appendChild(li);
+            }
+            console.log(list)
+            return list;
+        }
+        function nextDataSetGetter(arr = dataSet){
+            let iterator = function(){
+                let nextIndex = -1;
+                return {
+                    next: ()=>{
+                        nextIndex++;
+                        if (nextIndex >= arr.length) nextIndex = 0;
+                        console.log(nextIndex)
+                        return{
+                            value: arr[nextIndex],
+                            done: false
+                        }
+                    }
+                }
+            };
+            let iteratorInstance = iterator();
+            function getNext(){return iteratorInstance.next().value}
+            return {
+                nextValue: getNext
+            } 
+        }
+        
+
+        class PersonData extends HTMLElement{
+            constructor(){
+                super();
+                let templ = document.querySelector('#personData');
+                this.attachShadow({mode:'open'});
+                this.shadowRoot.appendChild(templ.content.cloneNode(true));
+            }
+        }
+        window.customElements.define('person-data', PersonData);
+
+replaceData();
+    </script>
+</body>
+</html>

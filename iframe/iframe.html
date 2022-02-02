@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Embeded</title>
+</head>
+<body>
+    <p>This is the iframe internal content</p>
+    <button onclick="postToParent()">Post to parent</button>
+    <script>
+        
+        console.dir(window)
+        // console.dir(contentDocument)
+        // console.dir(contentWindow)
+        // console.dir(window.parent);
+
+        window.onmessage((e)=>{
+            let p = document.querySelector('p');
+            p.innerHTML = e.data;
+        })
+        function postToParent(msg = "Posting to parent"){
+            window.parent.postMessage(msg, 'null');
+        }
+    </script>
+</body>
+</html>
