@@ -17,13 +17,17 @@ class Modal extends HTMLElement {
                 background-color: rgba(50,50,50,0.5);
                 left:0; top:0;
             }
-            .cuntent-outlet{
+            .content{
                 position:relative;
                 top:50%;
                 left:50%;
                 transform: translate(-50%,-50%);
                 height: 200px;
                 overflow: auto;
+                display: inline-block;
+            }
+            .outside-wrapped-styling{
+                color: orange;
             }
         </style>
         <div class="shutter">
