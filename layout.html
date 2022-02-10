@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Layout</title>
+</head>
+<body>
+    <style>
+        body{
+            margin:0;
+        }
+        .row{
+
+        }
+        .title{
+            margin-left: auto;
+            margin-right: auto;
+            margin: auto;
+            width: 0px;
+        }
+        .title>h1{
+            transform: translateX(-50%);
+            position: absolute;
+        }
+        .content{
+            background-color:gray;
+            height: 3000px;
+            float: left;
+        }
+        .header{
+            background-color:blueviolet;
+            position: relative;
+            height: 4rem;
+        }
+        .body{
+            height: calc(100vh - 4rem);
+            overflow: auto;
+        }
+        .footer{
+            background-color:blueviolet;
+            height: 3rem;
+            width: 100%;
+        }
+        .side{
+            background-color:cyan;
+            height: 600px;
+            float: left;
+            
+        }
+        /* .col {display: inline;} */
+        .col-1{width: 8.33%}
+        .col-2{width: 16.66%}
+        .col-3{width: 25%}
+        .col-4{width: 33.33%}
+        .col-5{width: 41.66%}
+        .col-6{width: 50%}
+        .col-7{width: 58.33%}
+        .col-8{width: 66.67%}
+        .col-9{width: 75%}
+        .col-10{width: 83.33%}
+        .col-11{width: 91.67%}
+        .col-12{width: 100%}
+
+        .clearfix {
+         overflow: auto;
+        }   
+    </style>
+    <div>
+        <div class="header row">
+            <div class="title"><h1>Layout</h1></div>
+        </div>
+        <div class="row body">
+            <div class="row">
+                <div class=" col content col-9"></div>
+                <div class=" col side col-3"></div>
+            </div>
+            <div class="footer clearfix">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
