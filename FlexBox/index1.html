@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Flexbox</title>
+</head>
+<body>
+    <style>
+        body{
+            margin:0;
+            background-color: #aaa;
+        }
+        .center{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+        .safe-center{
+            display: flex;
+            justify-content: safe center;
+            align-items: safe center;
+            align-content: safe center;
+            /* justify-content:  center;
+            align-items:  center;
+            align-content:  center; */
+
+        }
+        .safe-center::before{
+            position: relative;
+            content:''
+        }
+
+        .container{
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            background-color:darkblue;
+            margin-top: 0;
+            margin-bottom: 0;
+            position: relative;
+            height: 100vh;
+            overflow: auto;
+        }
+
+        .row{
+            display: flex;
+            border: thin black solid;
+            border-radius: 5px;
+            background-color:blueviolet;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif; 
+            margin: 10px;
+            padding: 10px;
+        }
+        .item{
+            position: relative;
+            width: 100px;
+            height: 60px;
+            background-color:cadetblue;
+            border-radius: 5px;
+            font-size: 2rem;
+            margin: 5px;
+        }
+        .item-fluid{
+            width: unset;
+            height: unset;
+        }
+        .width-300{
+            min-width: 300px;
+        }
+        .item-basis{
+            /* flex-basis: 100px; */
+            flex-grow: 1;
+        }
+        .wrap{
+            flex-wrap: wrap;
+        }
+        .title{
+            font-family: Arial, Helvetica, sans-serif;
+            color:white;
+        }
+        h2{
+            display: block;
+            text-align: center;
+        }
+        .comment{
+            background-color:black;
+            color: #bbb;
+            border-radius: 5px;
+        }
+        .space{
+            position: relative;
+            height: 500px;
+        }
+    </style>
+
+    <div class="container">
+        <div class="title"><h2>no-wrap</h2></div>
+        <div class="row" id="noWrapExample"></div>
+
+        <div class="title"><h2>wrap</h2></div>
+        <div class="row wrap" id="WrapExample"></div>
+
+        <div class="title"><h2>Fluid width</h2></div>
+        <div class="comment">
+            <pre>
+In below example both: the initial item width should be set. Either by 
+<code>flex-basis</code> property or just by the width property.
+            </pre>
+        </div>
+        <div class="row wrap" id="FluidExample"></div>
+
+
+        <div class="title"><h2>Centering problem</h2></div>
+        <div class="comment">
+Setting flex to justify-content: center and min-width to 300px;,
+suddenly content becomes unavailable!            
+        </div>
+        <div class="row  center" id="CenterProblem"></div>
+
+        <div class="title"><h2>Solving centering problem</h2></div>
+        <div class="comment">
+Setting flex to justify-content: center and min-width to 300px;,
+suddenly content becomes unavailable!            
+        </div>
+        <div class="row  safe-center" id="SafeCenterProblem"></div>
+        
+    </div>
+
+
+    <div class="space"></div>
+    <script>
+        function getItemElement(label, classes){
+            let item = document.createElement('div');
+            item.innerText = label;
+            for (let c of classes){
+                item.classList.add(c);
+            }
+            return item;
+        }
+        function insertItemsToId(id, nrOfItems, classes){
+            let outlet = document.getElementById(id);
+            for (let i = 0; i<nrOfItems; i++){
+                outlet.appendChild(getItemElement(i, classes))
+            }
+        }
+        window.onload = (e)=>{
+            insertItemsToId('noWrapExample', 25, ['item', 'center']);
+            insertItemsToId('WrapExample', 25, ['item', 'center']);
+            insertItemsToId('FluidExample', 15, ['item', 'center', 'item-basis']);
+            insertItemsToId('CenterProblem', 5, ['item', 'center', 'width-300']);
+            insertItemsToId('SafeCenterProblem', 5, ['item', 'center', 'width-300']);
+        }
+    </script>
+    
+</body>
+</html>
+
+
+<!-- https://www.stefanjudis.com/today-i-learned/safe-unsafe-alignment-in-css-flexbox/
+align-items not falling back -->
