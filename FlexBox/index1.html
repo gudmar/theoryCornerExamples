@@ -28,10 +28,10 @@
             align-content:  center; */
 
         }
-        .safe-center::before{
+        /* .safe-center::before{
             position: relative;
             content:''
-        }
+        } */
 
         .container{
             width: 80%;
@@ -54,6 +54,7 @@
             font-family: Arial, Helvetica, sans-serif; 
             margin: 10px;
             padding: 10px;
+            position: relative;
         }
         .item{
             position: relative;
@@ -90,11 +91,47 @@
             background-color:black;
             color: #bbb;
             border-radius: 5px;
+            padding: 10px;
+            font-size: 1.3rem;
+            font-family: monospace;
+            overflow-wrap: break-world;
+
+        }
+        .comment code{
+            color: orange;
         }
         .space{
             position: relative;
             height: 500px;
         }
+
+        .overflow-auto{
+            overflow: auto;
+        }
+        .overflow-auto:before, .overflow-auto::after{
+            content:'';
+            height: 30px;
+            width: 0;
+            background-color: yellow;
+            position: relative;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        .inline-block{display: inline-block; vertical-align: middle}
+
+        .justify-items-flex-start{justify-items: flex-start;}
+
+        /* .overflow-auto:first-child::before{
+            content:'';
+
+            width: 3px;
+            height: 3px;
+        } */
+
+
+
+
     </style>
 
     <div class="container">
@@ -106,10 +143,10 @@
 
         <div class="title"><h2>Fluid width</h2></div>
         <div class="comment">
-            <pre>
+            
 In below example both: the initial item width should be set. Either by 
 <code>flex-basis</code> property or just by the width property.
-            </pre>
+            
         </div>
         <div class="row wrap" id="FluidExample"></div>
 
@@ -121,17 +158,51 @@ suddenly content becomes unavailable!
         </div>
         <div class="row  center" id="CenterProblem"></div>
 
-        <div class="title"><h2>Solving centering problem</h2></div>
+        <div class="title"><h2>Solving centering problem: <code>safe center</code></h2></div>
         <div class="comment">
 Setting flex to justify-content: center and min-width to 300px;,
-suddenly content becomes unavailable!            
+Attempt to fix the centering problem with the <code>justify-content</code> and <code>justify-items</code>
+<code>safe center</code>, but this solution works only for firefox at the moment, so not the best approach.
+There is not the good solution for this problem. This is a problem, as there is a <code>safe center</code>
+invention (hovever still not implemented in most browsers). Over technicks involve putting a before pseudo-elelent 
+in the wrappling div and setting it to:
+<pre>
+.wrapper:before{
+    content:'';
+    height: 100%;
+    width: 0;
+    vertical-align: middle;
+    display: inline-block;
+}
+</pre>
+Wrapper in this solution seems to lose its <code>display: flex</code>, so not great
+<a href="https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container">
+    https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container</a>
         </div>
         <div class="row  safe-center" id="SafeCenterProblem"></div>
+    
+
+
+
+        <div class="title"><h1>Justify-items</h1></div>
+        <div class="comment">
+            The <code>items</code> refer to the content if it is in a single line. The <code>content</code>
+            refers to the <code>flex:wrap</code>
+        </div>
+        <div class="title"><h3>flex-start</h3></div>
+        <div class="row  justify-items-flex-start" id="justify-items-flex-start"></div>
+
+
+
+        <div class="space"></div> 
+        </div>
         
+        
+
     </div>
 
 
-    <div class="space"></div>
+    
     <script>
         function getItemElement(label, classes){
             let item = document.createElement('div');
@@ -153,6 +224,7 @@ suddenly content becomes unavailable!
             insertItemsToId('FluidExample', 15, ['item', 'center', 'item-basis']);
             insertItemsToId('CenterProblem', 5, ['item', 'center', 'width-300']);
             insertItemsToId('SafeCenterProblem', 5, ['item', 'center', 'width-300']);
+            insertItemsToId('justify-items-flex-start', 5, ['item', 'center']);
         }
     </script>
     
