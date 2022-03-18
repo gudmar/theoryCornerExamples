@@ -15,6 +15,8 @@
             padding:0;
             margin:0;
             background-image: url('./staleBG.png');
+            background-repeat: no-repeat;
+            background-size: 100vw 100vh;
             overflow: auto;
             position: relative;
             width: 100vw;
@@ -22,7 +24,6 @@
         }
         .grid-parent{
             width: 100vw;
-            /* height: 200vh; */
             position: relative;
             display: grid;
             grid-template-areas: "a a a a a"
@@ -35,12 +36,12 @@
             grid-area: a;
             background-color: #777;
             position: relative;
-            height: 20vh;
+            height: 30vh;
         }
         .grid-child-b{
             grid-area: b;
             background-color: #999;
-            height: 10vh;
+            height: 15vh;
         }
         .grid-child-c{
             grid-area: c;
@@ -53,7 +54,7 @@
         .grid-child-e{
             grid-area: e;
             background-color: green;
-            height: 10vh;
+            height: 15vh;
         }
         .grid-child-f{
             grid-area: f;
@@ -62,7 +63,7 @@
         .grid-child-g{
             grid-area: g;
             background-color: #ddd;
-            height: 10vh;
+            height: 15vh;
         }
         .grid-child-h{
             grid-area: h;
