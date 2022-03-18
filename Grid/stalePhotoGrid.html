@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>StaleImage</title>
+</head>
+<body>
+    <style>
+        html{
+            overflow: auto;
+        }
+        body{
+            padding:0;
+            margin:0;
+            background-image: url('./staleBG.png');
+            overflow: auto;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .grid-parent{
+            width: 100vw;
+            /* height: 200vh; */
+            position: relative;
+            display: grid;
+            grid-template-areas: "a a a a a"
+                                 "b . . . c"
+                                 "d . e . f"
+                                 "g . . . h"
+                                 "i i i i i";
+        }
+        .grid-child-a{
+            grid-area: a;
+            background-color: #777;
+            position: relative;
+            height: 20vh;
+        }
+        .grid-child-b{
+            grid-area: b;
+            background-color: #999;
+            height: 10vh;
+        }
+        .grid-child-c{
+            grid-area: c;
+            background-color: #999;
+        }
+        .grid-child-d{
+            grid-area: d;
+            background-color: #ddd;
+        }
+        .grid-child-e{
+            grid-area: e;
+            background-color: green;
+            height: 10vh;
+        }
+        .grid-child-f{
+            grid-area: f;
+            background-color: #ddd;
+        }
+        .grid-child-g{
+            grid-area: g;
+            background-color: #ddd;
+            height: 10vh;
+        }
+        .grid-child-h{
+            grid-area: h;
+            background-color: #ddd;
+        }
+        .grid-child-i{
+            grid-area: i;
+            background-color: #444;
+        }
+
+        .child-of-grid-i{
+            position: relative;
+            height: 100vh;
+        }
+        .center{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* align-content: center; */
+        }
+        .text{
+            font-family: Arial, Helvetica, sans-serif;
+            color: white;
+        }
+
+    </style>
+    <div class="grid-parent">
+        <div class="grid-child-a center text"><h1>Lawnmower</h1></div>
+        <div class="grid-child-b center text">b</div>
+        <div class="grid-child-c center text">c</div>
+        <div class="grid-child-f center text">f</div>
+        <div class="grid-child-g center text">g</div>
+        <div class="grid-child-h center text">h</div>
+        <div class="grid-child-i center text">
+            <div class="child-of-grid-i center text">e-child</div>
+        </div>
+        <div class="grid-child-d center text">d</div>
+        <div class="grid-child-e center text">e</div>
+    </div>
+    
+</body>
+</html>
