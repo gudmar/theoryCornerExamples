@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Grid 1</title>
+</head>
+<body>
+    <style>
+        body{
+            margin:0;
+            background-color: #aaa;
+        }
+        .center{
+            display: flex;
+            justify-content: center;
+            /* align-items: center;
+            align-content: center; */
+        }
+        
+
+        .container{
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            background-color:darkblue;
+            margin-top: 0;
+            margin-bottom: 0;
+            position: relative;
+            height: 100vh;
+            overflow: auto;
+        }
+
+        .grid{
+            display: grid;
+            border: thin black solid;
+            border-radius: 5px;
+            background-color:blueviolet;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif; 
+            margin: 10px;
+            padding: 10px;
+            position: relative;
+        }
+        .item{
+            position: relative;
+            /* width: 100px; */
+            height: 60px;
+            background-color:cadetblue;
+            border-radius: 5px;
+            font-size: 2rem;
+            margin: 5px;
+            border: thin solid black;
+        }
+        .item-fluid{
+            width: unset;
+            height: unset;
+        }
+        .width-300{
+            min-width: 300px;
+        }
+
+        .title{
+            font-family: Arial, Helvetica, sans-serif;
+            color:white;
+        }
+        h2{
+            display: block;
+            text-align: center;
+        }
+        .comment{
+            background-color:black;
+            color: #bbb;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 1.3rem;
+            font-family: monospace;
+            overflow-wrap: break-world;
+
+        }
+        .comment code{
+            color: orange;
+        }
+        .space{
+            position: relative;
+            height: 500px;
+        }
+
+        .overflow-auto{
+            overflow: auto;
+        }
+        .overflow-auto:before, .overflow-auto::after{
+            content:'';
+            height: 30px;
+            width: 0;
+            background-color: yellow;
+            position: relative;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        .inline-block{display: inline-block; vertical-align: middle}
+        
+        .grid-column-none{
+            grid-template-columns: none;
+        }
+
+        .grid-column-none{
+            grid-template-columns: none;
+        }
+
+
+
+    </style>
+
+    <div class="container">
+        <div class="title"><h1>grid-template-columns</h1></div>
+
+
+        <div class="title"><h2>Constant width: (80px, 80px, 80px)</h2></div>
+        <style>.grid-column-constant{grid-template-columns: 80px 80px 80px}</style>
+        <div class="grid grid-column-constant" id="constantWidth"></div>
+
+        <div class="title"><h2>Constant width, column gap: (80px, 80px, 80px, gap 40px)</h2></div>
+        <style>.grid-column-constant-gap{grid-template-columns: 80px 80px 80px;column-gap: 40px}</style>
+        <div class="grid grid-column-constant-gap" id="constantWidthColumnGap"></div>
+
+        <div class="title"><h2>Auto width: (auto auto auto)</h2></div>
+        <style>
+            .grid-column-auto{grid-template-columns: auto auto auto;}
+            .wider{width: 100px}
+        </style>
+        <div class="grid grid-column-auto" id="autoWidth"></div>
+
+        <div class="title"><h2>Fractions, 50px, 1fr, 2fr, 3fr</h2></div>
+        <style>.grid-column-fractions{grid-template-columns: 50px 1fr 2fr 3fr;}</style>
+        <div class="grid grid-column-fractions" id="gridFractions"></div>
+
+        <div class="title"><h2>minmax(100px, 1fr)</h2></div>
+        <style>.grid-minmax{grid-template-columns: minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)}</style>
+        <div class="grid grid-minmax" id="gridMinmax"></div>
+        <div class="comment"><b>NOTE!</b> <code>minmax(a, b></code> defines a size range greater or equal to 
+        min, and less than or equal to max. It is used with css <u>grids</u>. In case of the parent container 
+        smaller than summ of widths of child elements, child elements will overflow outside the parent element. </div>
+
+
+        <div class="title"><h2>Repeat</h2></div>
+        <style>.grid-column-repeat{grid-template-columns: repeat(8, 60px)}</style>
+        <div class="grid grid-column-repeat" id="gridRepeat"></div>
+
+        <!-- <div class="comment">
+            
+In below example both: the initial item width should be set. Either by 
+<code>flex-basis</code> property or just by the width property.
+            
+        </div> -->
+
+        <div class="space"></div>
+    </div>
+
+
+    
+    <script>
+        function getItemElement(label, classes){
+            let item = document.createElement('div');
+            item.innerText = label;
+            for (let c of classes){
+                item.classList.add(c);
+            }
+            return item;
+        }
+        function insertItemsToId(id, nrOfItems, classes){
+            let outlet = document.getElementById(id);
+            for (let i = 0; i<nrOfItems; i++){
+                outlet.appendChild(getItemElement(i, classes))
+            }
+        }
+        window.onload = (e)=>{
+            insertItemsToId('constantWidth', 7, ['item', 'center']);
+            insertItemsToId('constantWidthColumnGap', 7, ['item', 'center']);
+            insertItemsToId('autoWidth', 7, ['item', 'center', 'wider'])
+            
+            insertItemsToId('gridFractions', 17, ['item', 'center']);
+            insertItemsToId('gridMinmax', 7, ['item', 'center']);
+            insertItemsToId('gridRepeat', 17, ['item', 'center']);
+            
+
+        }
+    </script>
+    
+</body>
+</html>
+
+
+<!-- https://www.stefanjudis.com/today-i-learned/safe-unsafe-alignment-in-css-flexbox/
+align-items not falling back -->
